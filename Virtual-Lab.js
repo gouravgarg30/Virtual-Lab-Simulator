@@ -1,11 +1,4 @@
-// VirtualLab dashboard hero: a 3D circuit board drawn on a canvas.
-// A small lab board in perspective, slowly turning and tilting: a 9 V battery, a resistor with colour bands
-// (220 ohm: red, red, brown, gold) and an LED that brightens as the current flows. Seven current dots run
-// round the trace, each with a glow trail. A faint grid lies under the board.
-// Colours: the whole hero is drawn in the current theme colour: #39ff14 (green), #00f0ff (cyan) or #ff2bd6 (pink).
-// When the theme changes the colour eases over about 0.6 s (reduced motion: switches at once).
-// Motion: every frame is a smooth function of time, so nothing jumps.
-// Reduced motion: one still picture of the board, drawn once.
+
 (function () {
   var cv = document.getElementById('hero-circuit-canvas');
   if (!cv || !cv.getContext) return;
@@ -15,29 +8,27 @@
   cv.width = Math.round(W * dpr);
   cv.height = Math.round(H * dpr);
 
-  var TEXT = [246, 242, 234];  // the page text colour
+  var TEXT = [246, 242, 234];  
 
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ---- theme colour ----
-  // The whole hero is drawn in the current theme colour. ACC is that colour as it is right now. When the theme
-  // changes, ACC eases from the old colour to the new one over FADE_MS (reduced motion: it switches at once).
+
   var THEME_RGB = {
-    green: [57, 255, 20],    // #39ff14
-    cyan: [0, 240, 255],     // #00f0ff
-    pink: [255, 43, 214]     // #ff2bd6
+    green: [57, 255, 20],    
+    cyan: [0, 240, 255],     
+    pink: [255, 43, 214]     
   };
   var FADE_MS = 600;
   function themeNow() {
     var name = document.documentElement.getAttribute('data-theme');
     return (THEME_RGB[name] || THEME_RGB.cyan).slice();
   }
-  var target = themeNow();     // the colour the hero is heading to
-  var ACC = target.slice();    // the colour used for drawing right now
-  var fromRGB = ACC.slice();   // where the current fade started
+  var target = themeNow();     
+  var ACC = target.slice();    
+  var fromRGB = ACC.slice();   
   var fadeStart = 0, fading = false;
 
-  // the theme may have changed: aim the hero at the new colour
+
   function aimTheme(instant) {
     var next = themeNow();
     if (next[0] === target[0] && next[1] === target[1] && next[2] === target[2]) return;
@@ -48,7 +39,7 @@
     fading = true;
   }
 
-  // move ACC one step towards the target: a smooth lerp, eased at both ends
+
   function stepTheme(now) {
     if (!fading) return;
     var p = (now - fadeStart) / FADE_MS;
@@ -57,17 +48,17 @@
     for (var c = 0; c < 3; c++) ACC[c] = Math.round(fromRGB[c] + (target[c] - fromRGB[c]) * e);
   }
 
-  // ---- camera: the eye looks along +z; the board centre sits Z0 units away ----
+
   var F = 770, Z0 = 700;
   var CX = W / 2, CY = 190;
 
-  // ---- board (world units: x across, z away from the viewer, y up from the board top) ----
-  var BX = 210, BZ = 130;      // board half sizes
-  var WX = 165, WZ = 88;       // the trace rectangle, half sizes
-  var LX = 34;                 // LED position along the far trace
+
+  var BX = 210, BZ = 130;      
+  var WX = 165, WZ = 88;       
+  var LX = 34;                 
   var BAT_X = -WX, RES_X = WX;
 
-  // ---- the trace loop, as four corners (a closed rectangle) ----
+
   var CORNERS = [[-WX, -WZ], [-WX, WZ], [WX, WZ], [WX, -WZ]];
   var SEGS = [], PERIM = 0;
   var i;
@@ -78,13 +69,13 @@
     PERIM += len;
   }
 
-  // ---- timing ----
-  var LOOP = 8;                // seconds for the dots to go once round the trace (the picture repeats every 8 s)
+
+  var LOOP = 8;                
   var DOTS = 7;
-  var SPEED = PERIM / LOOP;    // world units per second
+  var SPEED = PERIM / LOOP;    
   var TRAIL = 14, TRAIL_GAP = 4.5;
 
-  // the point on the trace at distance s (wrapping), at a height just above the board
+
   function pathPoint(s) {
     s = ((s % PERIM) + PERIM) % PERIM;
     for (var j = 0; j < SEGS.length; j++) {
@@ -97,21 +88,21 @@
     return [0, 1.2, 0];
   }
 
-  // the board's pose at time t: a slow turn to one side and back, and a small change of tilt
+
   function pose(t) {
-    var yaw = 0.5 * Math.sin(t * 2 * Math.PI / 14);                              // about +-29 degrees, 14 s per swing
-    var tilt = (-55 + 3 * Math.sin(t * 2 * Math.PI / 10 + 1)) * Math.PI / 180;   // about 55 degrees down
+    var yaw = 0.5 * Math.sin(t * 2 * Math.PI / 14);                              
+    var tilt = (-55 + 3 * Math.sin(t * 2 * Math.PI / 10 + 1)) * Math.PI / 180;   
     return { cy: Math.cos(yaw), sy: Math.sin(yaw), ct: Math.cos(tilt), st: Math.sin(tilt) };
   }
 
-  // turn a point (or a direction, when the offset is not applied) by the pose
+
   function rot(x, y, z, S) {
     var x1 = x * S.cy + z * S.sy;
     var z1 = -x * S.sy + z * S.cy;
     return [x1, y * S.ct - z1 * S.st, y * S.st + z1 * S.ct];
   }
 
-  // project a world point to the canvas: [sx, sy, scale, depth]
+
   function proj(x, y, z, S) {
     var r = rot(x, y, z, S);
     var d = Z0 + r[2];
@@ -119,7 +110,7 @@
     return [CX + r[0] * k, CY - r[1] * k, k, d];
   }
 
-  // a box: 6 faces, each drawn only when it faces the eye
+
   var FACES = [
     { n: [0, 1, 0], v: [[-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]] },
     { n: [0, 0, 1], v: [[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]] },
@@ -138,7 +129,7 @@
     for (var f = 0; f < 6; f++) {
       var face = FACES[f];
       var nr = rot(face.n[0], face.n[1], face.n[2], S);
-      if (nr[2] >= 0) continue;                       // the back of the box
+      if (nr[2] >= 0) continue;                      
       var lit = nr[0] * LIGHT[0] + nr[1] * LIGHT[1] + nr[2] * LIGHT[2];
       var shade = 0.4 + 0.6 * Math.max(0, lit);
       var p = [];
@@ -160,7 +151,7 @@
     }
   }
 
-  // a polyline on the canvas
+
   function poly(pts, rgba, width) {
     ctx.beginPath();
     ctx.moveTo(pts[0][0], pts[0][1]);
@@ -174,7 +165,7 @@
     return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
   }
 
-  // the faint grid under the board: fades out with distance from the centre
+
   function drawGrid(S) {
     var Y = -44, STEP = 40, EX = 360, EZ = 240, PIECES = 12;
     ctx.lineWidth = 1;
@@ -198,7 +189,7 @@
     for (z = -EZ; z <= EZ; z += STEP) seg(-EX, z, EX, z);
   }
 
-  // small pads on the board, in a loose grid
+
   function drawPads(S) {
     var x, z;
     for (x = -180; x <= 180; x += 30) {
@@ -212,7 +203,7 @@
     }
   }
 
-  // the trace: a glow under a thin bright line
+
   function drawTrace(S) {
     var pts = [];
     for (var i2 = 0; i2 <= 4; i2++) {
@@ -227,7 +218,7 @@
     poly(pts, rgba(ACC, 0.75), 1.6);
   }
 
-  // a soft pool of green light on the board under the LED
+
   function drawPool(S, b) {
     var p = proj(LX, 0.3, WZ, S);
     var r = 80 * p[2];
@@ -245,7 +236,7 @@
     ctx.restore();
   }
 
-  // the current dots: each one has a glow head and a trail behind it
+
   function drawDots(t, S, b) {
     var head0 = t * SPEED;
     var k, i3;
@@ -279,8 +270,8 @@
 
   function drawBattery(S) {
     box([BAT_X, 10, 0], [11, 9, 30], [34, 56, 86], S, rgba(ACC, 0.55));
-    box([BAT_X, 21, 20], [4, 2, 3.5], ACC, S, null);               // + terminal
-    box([BAT_X, 21, -20], [4, 2, 3.5], [150, 150, 160], S, null);  // - terminal
+    box([BAT_X, 21, 20], [4, 2, 3.5], ACC, S, null);               
+    box([BAT_X, 21, -20], [4, 2, 3.5], [150, 150, 160], S, null);  
   }
 
   function drawResistor(S) {
@@ -303,7 +294,7 @@
     ctx.arc(p[0], p[1], r, 0, Math.PI * 2);
     ctx.fillStyle = g;
     ctx.fill();
-    // the halo, added on top of the picture
+
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     var hr = 46 * p[2];
@@ -331,9 +322,9 @@
   }
 
   function draw(t) {
-    stepTheme(performance.now());   // ease the colour towards the current theme (no-op when settled)
+    stepTheme(performance.now());   
     var S = pose(t);
-    // the LED: dim at the start of each 8 s loop, brightest half way through, and back
+
     var b = 0.35 + 0.65 * (0.5 - 0.5 * Math.cos(2 * Math.PI * t / LOOP));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
@@ -355,8 +346,8 @@
     drawLabels(S, b);
   }
 
-  // Any change of html[data-theme] (swatch click, saved choice, another tab) comes through here.
-  // Reduced motion: the still picture is redrawn at once in the new colour.
+
+
   if (window.MutationObserver) {
     new MutationObserver(function () {
       aimTheme(reduce);
@@ -364,13 +355,13 @@
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 
-  // Reduced motion: one still picture
+
   if (reduce) {
     draw(2.0);
     return;
   }
 
-  // ---- animation ----
+
   var start = performance.now();
   var frozen = false;
   function frame(now) {
@@ -379,57 +370,43 @@
     requestAnimationFrame(frame);
   }
 
-  // for the video recorder: draw any time t, and stop the live loop first
+
   window.__heroCircuitDraw = function (t) { draw(t); };
   window.__heroCircuitFreeze = function () { frozen = true; };
 
   requestAnimationFrame(frame);
 })();
 
-/* ===== js/physics.js ===== */
-// physics.js
-// Saare physics aur circuit ke formulas yahan hain. Is file mein DOM / HTML kuch nahi hai
-// (pure JavaScript), isliye isko Node mein bhi test kar sakte hain (tests/ folder dekho).
-//
-// Models "ideal" hain: perfect battery, perfect wires, koi air resistance nahi.
+
 
 const Physics = {
-  // Default gravity (m/s^2)
+
   G_EARTH: 9.81,
 
-  // ---------- Circuit basics ----------
 
-  // Series: R_total = R1 + R2 + ...
+
+
   seriesResistance(ohmsList) {
     return ohmsList.reduce((sum, r) => sum + r, 0);
   },
 
-  // Parallel: 1/R_total = 1/R1 + 1/R2 + ...
+
   parallelResistance(ohmsList) {
     const sumOfInverses = ohmsList.reduce((sum, r) => sum + 1 / r, 0);
     return 1 / sumOfInverses;
   },
 
-  // Ohm's law: I = V / R
+
   current(volts, ohms) {
     return volts / ohms;
   },
 
-  // Power: P = V * I
+
   power(volts, amps) {
     return volts * amps;
   },
 
-  // Circuit solver.
-  // model = {
-  //   hasBattery, voltage, topology: 'series' | 'parallel',
-  //   switchPresent, switchClosed,
-  //   resistors: [{ id, label, ohms, connected }],
-  //   wireCount            (0-ohm wires)
-  // }
-  // Returns { status, message, warnings, totalResistance, current, voltage, power, parts }
-  // status: 'empty' | 'invalid' | 'open' | 'short' | 'partial' | 'ok'
-  // Jab status ok/partial nahi hota to numbers null hote hain (galat number nahi dikhate).
+
   solveCircuit(model) {
     const bad = (status, message) => ({
       status, message, warnings: [],
@@ -438,12 +415,12 @@ const Physics = {
     const OPEN_MESSAGE =
       'The circuit is not closed, so no current flows. Close the switch or connect the wires.';
 
-    // 1. Battery hai ya nahi
+
     if (!model.hasBattery) {
       return bad('empty', 'No battery yet. Add a battery from the palette to start.');
     }
 
-    // 2. Values sahi hain ya nahi
+
     if (!(model.voltage > 0) || !isFinite(model.voltage)) {
       return bad('invalid', 'Battery voltage must be greater than 0 volts.');
     }
@@ -453,7 +430,7 @@ const Physics = {
       }
     }
 
-    // 3. Switch open hai to current nahi behta
+
     if (model.switchPresent && !model.switchClosed) {
       return bad('open', OPEN_MESSAGE);
     }
@@ -463,9 +440,9 @@ const Physics = {
     const warnings = [];
 
     if (model.topology === 'series') {
-      // Series mein ek bhi tooti wire = poora circuit open
+
       if (loose.length > 0) return bad('open', OPEN_MESSAGE);
-      // Koi resistor nahi => battery seedha wire se judi hai = short circuit
+
       if (connected.length === 0) {
         return bad('short',
           'Short circuit: the battery is connected with no resistance in the path, so the current would be dangerously large. Add a resistor.');
@@ -483,8 +460,7 @@ const Physics = {
       };
     }
 
-    // ---- Parallel ----
-    // Wire branch (0 ohm) battery ko short kar deti hai
+  
     if (model.wireCount > 0) {
       return bad('short',
         'Short circuit: a plain wire branch has no resistance, so the current would be dangerously large. Remove the wire or add a resistor in that branch.');
@@ -518,29 +494,29 @@ const Physics = {
     };
   },
 
-  // ---------- Projectile motion (ground se ground tak, no air resistance) ----------
+
 
   toRadians(deg) {
     return (deg * Math.PI) / 180;
   },
 
-  // Range R = v^2 * sin(2 theta) / g
+
   projectileRange(speed, angleDeg, g) {
     return (speed * speed * Math.sin(2 * Physics.toRadians(angleDeg))) / g;
   },
 
-  // Time of flight T = 2 v sin(theta) / g
+
   projectileTimeOfFlight(speed, angleDeg, g) {
     return (2 * speed * Math.sin(Physics.toRadians(angleDeg))) / g;
   },
 
-  // Max height H = (v sin(theta))^2 / (2 g)
+
   projectileMaxHeight(speed, angleDeg, g) {
     const vy = speed * Math.sin(Physics.toRadians(angleDeg));
     return (vy * vy) / (2 * g);
   },
 
-  // Position at time t (animation ke liye)
+
   projectilePosition(speed, angleDeg, g, t) {
     const a = Physics.toRadians(angleDeg);
     return {
@@ -549,8 +525,7 @@ const Physics = {
     };
   },
 
-  // "Measured" values: chhote time steps mein step-by-step simulation chalate hain
-  // aur formula se compare karte hain. Ground cross hone par linear interpolation.
+
   simulateProjectile(speed, angleDeg, g, dt = 0.0005) {
     const a = Physics.toRadians(angleDeg);
     let x = 0, y = 0, t = 0, maxY = 0;
@@ -559,9 +534,9 @@ const Physics = {
     for (let i = 0; i < 2000000; i++) {
       const nextVy = vy - g * dt;
       const nextX = x + vx * dt;
-      const nextY = y + (vy + nextVy) / 2 * dt; // average velocity: accurate for constant g
+      const nextY = y + (vy + nextVy) / 2 * dt; 
       if (nextY < 0 && i > 0) {
-        const fraction = y / (y - nextY); // ground tak kitna step
+        const fraction = y / (y - nextY); 
         return {
           range: x + (nextX - x) * fraction,
           timeOfFlight: t + dt * fraction,
@@ -574,15 +549,14 @@ const Physics = {
     return { range: x, timeOfFlight: t, maxHeight: maxY };
   },
 
-  // ---------- Simple pendulum ----------
 
-  // Theory (small angle): T = 2 pi sqrt(L / g)
+
+
   pendulumPeriodTheory(length, g) {
     return 2 * Math.PI * Math.sqrt(length / g);
   },
 
-  // Pendulum equation: theta'' = -(g/L) sin(theta). RK4 se step-by-step solve karte hain.
-  // Returns { period, samples } ; samples = array of angles (radians) har dt par.
+  
   simulatePendulum(length, startAngleDeg, g, dt = 0.001, durationSeconds = 0) {
     const accel = (theta) => -(g / length) * Math.sin(theta);
     let theta = Physics.toRadians(startAngleDeg);
@@ -591,7 +565,7 @@ const Physics = {
     let period = null;
     const samples = [theta];
     const maxTime = Math.max(durationSeconds, 0);
-    // Safety limit: bahut lamba loop na chale
+
     for (let i = 0; i < 3000000; i++) {
       const k1t = omega,              k1w = accel(theta);
       const k2t = omega + 0.5 * dt * k1w, k2w = accel(theta + 0.5 * dt * k1t);
@@ -599,7 +573,7 @@ const Physics = {
       const k4t = omega + dt * k3w,   k4w = accel(theta + dt * k3t);
       const newTheta = theta + (dt / 6) * (k1t + 2 * k2t + 2 * k3t + k4t);
       const newOmega = omega + (dt / 6) * (k1w + 2 * k2w + 2 * k3w + k4w);
-      // Pehli baar jab angle 0 cross kare = quarter period. Period = 4 x quarter.
+
       if (period === null && theta > 0 && newTheta <= 0) {
         const fraction = theta / (theta - newTheta);
         period = 4 * (t + dt * fraction);
@@ -611,31 +585,25 @@ const Physics = {
     return { period, samples };
   },
 
-  // ---------- Comparison ----------
-
-  // Percent difference = |measured - theory| / theory * 100
+  
   percentDifference(measured, theory) {
     if (theory === 0) return 0;
     return (Math.abs(measured - theory) / Math.abs(theory)) * 100;
   },
 
-  // Status: tolerance ke andar => Matched, warna Needs repeat
+
   statusFromDifference(diffPercent, tolerancePercent) {
     return diffPercent <= tolerancePercent ? 'Matched' : 'Needs repeat';
   },
 };
 
-// Node (tests) ke liye export. Browser mein ye line skip ho jati hai.
+
 if (typeof module !== 'undefined' && module.exports) module.exports = Physics;
 
-/* ===== js/validation.js ===== */
-// validation.js
-// Input check karne ke functions (pure JS, tests mein bhi use hote hain).
-// Har function { ok, value, message } return karta hai.
-// Messages friendly hain: kya galat hua + kya karna hai.
+
 
 const Validation = {
-  // Text ko number mein badlo. Khali ya galat text => NaN
+
   toNumber(text) {
     if (text === null || text === undefined) return NaN;
     const cleaned = String(text).trim();
@@ -643,8 +611,6 @@ const Validation = {
     return Number(cleaned);
   },
 
-  // Generic range check.
-  // options: { label, unit, min, max, minExclusive }
   validateNumber(text, options) {
     const { label, unit = '', min = -Infinity, max = Infinity, minExclusive = false } = options;
     const value = Validation.toNumber(text);
@@ -667,7 +633,7 @@ const Validation = {
     return { ok: true, value, message: '' };
   },
 
-  // Resistance: PRD ka exact message "Resistance must be greater than 0 ohms."
+
   validateResistance(text) {
     const result = Validation.validateNumber(text, {
       label: 'Resistance', unit: 'ohms', min: 0, max: 1000000, minExclusive: true,
@@ -708,7 +674,7 @@ const Validation = {
     });
   },
 
-  // Result ka naam: khali nahi, max 60 characters
+
   validateName(text) {
     const name = String(text || '').trim();
     if (name === '') {
@@ -723,24 +689,22 @@ const Validation = {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Validation;
 
-/* ===== js/utils.js ===== */
-// utils.js
-// Chhote helper functions (pure JS): number formatting, HTML escape, CSV banana.
+
 
 const Utils = {
-  // Number ko readable banao: 1.2 -> "1.2", 6 -> "6", 0.333333 -> "0.333"
+
   formatNumber(value, decimals = 3) {
     if (value === null || value === undefined || Number.isNaN(value)) return '—';
     return String(parseFloat(Number(value).toFixed(decimals)));
   },
 
-  // Value + unit: formatWithUnit(1.2, 'A') -> "1.2 A"
+
   formatWithUnit(value, unit, decimals = 3) {
     if (value === null || value === undefined || Number.isNaN(value)) return '—';
     return Utils.formatNumber(value, decimals) + ' ' + unit;
   },
 
-  // User ka text HTML mein dalne se pehle escape karo (safe rehne ke liye)
+
   escapeHtml(text) {
     return String(text)
       .replace(/&/g, '&amp;')
@@ -750,8 +714,7 @@ const Utils = {
       .replace(/'/g, '&#39;');
   },
 
-  // Ek CSV cell banao. Comma/quote/newline ho to quotes lagao.
-  // Agar text = + - @ se shuru ho to Excel formula na samjhe, isliye aage ' lagate hain.
+
   csvCell(value) {
     let text = value === null || value === undefined ? '' : String(value);
     if (/^[=+\-@]/.test(text) && Number.isNaN(Number(text))) text = "'" + text;
@@ -759,16 +722,13 @@ const Utils = {
     return text;
   },
 
-  // headers = ['Name','Type'], rows = [['a','b'], ...]
+
   toCsv(headers, rows) {
     const lines = [headers.map(Utils.csvCell).join(',')];
     rows.forEach((row) => lines.push(row.map(Utils.csvCell).join(',')));
     return lines.join('\r\n');
   },
 
-  // Theme ka rang CSS variable se padho, e.g. Utils.themeColor('--accent', '#00f0ff').
-  // Drawings (SVG strings) har baar draw hote waqt ye call karti hain, isliye theme badalte hi naya rang aata hai.
-  // Ek theme ke liye values cache hoti hain (animation mein har frame getComputedStyle nahi chalta).
   _themeCache: { theme: null, values: {} },
   themeColor(name, fallback) {
     const fb = fallback || '#00f0ff';
@@ -785,12 +745,12 @@ const Utils = {
     }
   },
 
-  // Theme badalne par cache saaf karo
+
   clearThemeCache() {
     Utils._themeCache = { theme: null, values: {} };
   },
 
-  // Unique id: prefix + time + random
+
   makeId(prefix) {
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   },
@@ -798,26 +758,19 @@ const Utils = {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Utils;
 
-/* ===== js/themeManager.js ===== */
-// themeManager.js
-// Colour theme (green / cyan / pink): choose, remember, apply.
-// - Choice is saved in localStorage under "vlab-theme" (inside try/catch, so a blocked storage is fine).
-// - <head> has a tiny inline script that sets html[data-theme] before first paint; this file does the rest.
-// - On a change it sets data-theme, updates the swatch buttons and fires a "themechange" event on document.
-//   the simulator drawings listen to that event and redraw with the new CSS variables.
-// Loaded after utils.js and before the simulators / app.js.
+
 
 const ThemeManager = {
   KEY: 'vlab-theme',
   THEMES: ['green', 'cyan', 'pink'],
   DEFAULT: 'cyan',
 
-  // Kuch bhi aaye, valid theme naam hi wapas do
+
   normalize(value) {
     return ThemeManager.THEMES.indexOf(value) >= 0 ? value : ThemeManager.DEFAULT;
   },
 
-  // Saved choice padho (storage band ho ya kharab value ho to default)
+
   load(storage) {
     try {
       const store = storage || window.localStorage;
@@ -827,7 +780,7 @@ const ThemeManager = {
     }
   },
 
-  // Choice yaad rakho. true = save hua
+
   save(theme, storage) {
     try {
       const store = storage || window.localStorage;
@@ -846,13 +799,13 @@ const ThemeManager = {
     }
   },
 
-  // Theme lagao. persist=false se sirf dikhao, save mat karo.
+
   apply(theme, persist) {
     const next = ThemeManager.normalize(theme);
     const root = document.documentElement;
     const changed = root.getAttribute('data-theme') !== next;
     if (changed) {
-      // rang halke se badlein (reduced motion mein CSS ye transition hata deti hai)
+
       root.classList.add('theme-fade');
       window.clearTimeout(ThemeManager._fadeTimer);
       ThemeManager._fadeTimer = window.setTimeout(() => root.classList.remove('theme-fade'), 500);
@@ -870,7 +823,7 @@ const ThemeManager = {
     return next;
   },
 
-  // Swatch buttons: sirf chuna hua aria-pressed="true"
+
   syncButtons(theme) {
     document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
       btn.setAttribute('aria-pressed', btn.getAttribute('data-theme-choice') === theme ? 'true' : 'false');
@@ -882,7 +835,7 @@ const ThemeManager = {
     document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
       btn.addEventListener('click', () => ThemeManager.apply(btn.getAttribute('data-theme-choice'), true));
     });
-    // Doosri tab mein theme badle to yahan bhi badal do
+
     window.addEventListener('storage', (e) => {
       if (e.key === ThemeManager.KEY) ThemeManager.apply(ThemeManager.normalize(e.newValue), false);
     });
@@ -891,15 +844,6 @@ const ThemeManager = {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = ThemeManager;
 
-/* ===== js/sampleData.js ===== */
-// sampleData.js
-// Pehli baar app khulne par ye sample data localStorage mein save hota hai,
-// taaki Results screen kabhi khali na dikhe.
-//
-// Data shape (README mein bhi likha hai):
-//   Result  = { resultId, experimentType, name, inputs, outputs, theoreticalValue,
-//               measuredValue, valueLabel, unit, status, createdAt }
-//   Circuit = { circuitId, name, components, connections, updatedAt }
 
 const SampleData = {
   circuits() {
@@ -1007,12 +951,7 @@ const SampleData = {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = SampleData;
 
-/* ===== js/storage.js ===== */
-// storage.js  (LocalDataStore)
-// localStorage ke saath read / write / delete. Teen documented keys:
-//   virtuallab_circuits, virtuallab_results, virtuallab_prefs
-// Agar storage fail ho (full, blocked, private mode) to app crash nahi hota:
-// current kaam screen par rehta hai aur memory mein kaam chalta hai.
+
 
 const Store = {
   KEYS: {
@@ -1021,25 +960,25 @@ const Store = {
     prefs: 'virtuallab_prefs',
   },
 
-  // Backup copy memory mein (agar localStorage kaam na kare)
+
   memory: {},
-  // Aakhri problem ka message (UI isko dikhata hai)
+
   lastProblem: '',
 
-  // Raw JSON read. Missing => undefined, corrupt => null
+
   readRaw(key) {
     try {
       const text = window.localStorage.getItem(key);
       if (text === null) return undefined;
       return JSON.parse(text);
     } catch (error) {
-      // Ya to storage blocked hai, ya JSON kharab hai
+
       if (key in Store.memory) return Store.memory[key];
       return null;
     }
   },
 
-  // Write. Returns { ok: true } ya { ok: false, message }
+
   write(key, value) {
     Store.memory[key] = value;
     try {
@@ -1053,7 +992,7 @@ const Store = {
     }
   },
 
-  // App start par: agar key nahi hai ya kharab hai to sample data daalo
+
   ensureSampleData() {
     let reloaded = false;
     const circuits = Store.readRaw(Store.KEYS.circuits);
@@ -1069,14 +1008,14 @@ const Store = {
     return reloaded;
   },
 
-  // Sample data wapas laao (purana data replace hota hai)
+
   resetSampleData() {
     const a = Store.write(Store.KEYS.circuits, SampleData.circuits());
     const b = Store.write(Store.KEYS.results, SampleData.results());
     return a.ok && b.ok ? { ok: true } : { ok: false, message: Store.lastProblem };
   },
 
-  // ----- Results -----
+
   getResults() {
     const list = Store.readRaw(Store.KEYS.results);
     return Array.isArray(list) ? list : [];
@@ -1086,7 +1025,7 @@ const Store = {
     return Store.getResults().find((r) => r.resultId === resultId) || null;
   },
 
-  // Naya result add (sabse upar)
+
   addResult(result) {
     const list = Store.getResults();
     list.unshift(result);
@@ -1098,13 +1037,13 @@ const Store = {
     return Store.write(Store.KEYS.results, list);
   },
 
-  // ----- Circuits -----
+
   getCircuits() {
     const list = Store.readRaw(Store.KEYS.circuits);
     return Array.isArray(list) ? list : [];
   },
 
-  // Same circuitId ho to update, warna add
+
   saveCircuit(design) {
     const list = Store.getCircuits();
     const index = list.findIndex((c) => c.circuitId === design.circuitId);
@@ -1113,7 +1052,7 @@ const Store = {
     return Store.write(Store.KEYS.circuits, list);
   },
 
-  // ----- Preferences -----
+
   getPrefs() {
     const defaults = { role: 'student', units: 'SI', lastExperiment: '' };
     const saved = Store.readRaw(Store.KEYS.prefs);
@@ -1126,19 +1065,15 @@ const Store = {
   },
 };
 
-/* ===== js/ui.js ===== */
-// ui.js
-// Chhote UI helpers jo sab screens use karti hain:
-// messages (FeedbackMessage), field errors, slider + number link, status badge, dates.
+
 
 const UI = {
-  // Short shortcut: id se element
+
   byId(id) {
     return document.getElementById(id);
   },
 
-  // Message dikhao (FeedbackMessage). type: 'success' | 'warning' | 'danger' | 'info'
-  // Color ke saath word bhi hota hai (Success / Warning / Error), taaki sirf color par depend na ho.
+
   showMessage(containerId, type, text) {
     const box = UI.byId(containerId);
     if (!box) return;
@@ -1156,7 +1091,7 @@ const UI = {
     if (box) box.innerHTML = '';
   },
 
-  // Input ke neeche error dikhao (ya hatao agar message khali ho)
+
   setFieldError(inputEl, errorId, message) {
     const errorEl = UI.byId(errorId);
     if (message) {
@@ -1170,14 +1105,14 @@ const UI = {
     }
   },
 
-  // Slider aur number box ko sync rakho. onChange har change par chalega.
+
   linkRangeAndNumber(rangeEl, numberEl, onChange) {
     rangeEl.addEventListener('input', () => {
       numberEl.value = rangeEl.value;
       onChange();
     });
     numberEl.addEventListener('input', () => {
-      // Sirf valid number ho to slider hilao
+
       if (numberEl.value !== '' && !Number.isNaN(Number(numberEl.value))) {
         rangeEl.value = numberEl.value;
       }
@@ -1185,7 +1120,7 @@ const UI = {
     });
   },
 
-  // Status badge: icon + text (color akela nahi)
+
   statusBadge(status) {
     if (status === 'Matched') return '<span class="badge badge-ok">Matched</span>';
     return '<span class="badge badge-warn">Needs repeat</span>';
@@ -1202,14 +1137,13 @@ const UI = {
     return date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   },
 
-  // Ek readout tile: label + value
+
   readoutTile(label, valueText) {
     return '<div class="readout-tile"><div class="readout-label">' + Utils.escapeHtml(label) +
       '</div><div class="readout-value">' + valueText + '</div></div>';
   },
 
-  // Save ke baad: result ko Store mein daalo aur message dikhao.
-  // Storage fail ho to error dikhta hai, current kaam screen par rehta hai.
+ 
   saveResultWithMessage(result, feedbackId) {
     const outcome = Store.addResult(result);
     if (outcome.ok) {
@@ -1221,11 +1155,7 @@ const UI = {
   },
 };
 
-/* ===== js/roles.js ===== */
-// roles.js
-// Student / Teacher view switch. Role prefs mein save hota hai (virtuallab_prefs).
-// Teacher-only cheezein HTML mein data-role="teacher" se mark hoti hain.
-// NOTE: login nahi hai, isliye ye security nahi hai - sirf view switch hai.
+
 
 const Roles = {
   current() {
@@ -1243,7 +1173,7 @@ const Roles = {
     Roles.apply();
   },
 
-  // Student view mein teacher-only elements hide (hidden attribute) ho jate hain
+
   apply() {
     const teacher = Roles.isTeacher();
     document.querySelectorAll('[data-role="teacher"]').forEach((el) => {
@@ -1253,7 +1183,7 @@ const Roles = {
     if (select) select.value = Roles.current();
   },
 
-  // Teacher-only kaam karne se pehle check (export, teacher screen, reset)
+
   require(actionName) {
     if (Roles.isTeacher()) return true;
     UI.showMessage('global-feedback', 'warning',
@@ -1262,12 +1192,10 @@ const Roles = {
   },
 };
 
-/* ===== js/dashboard.js ===== */
-// dashboard.js
-// Lab Dashboard screen: experiment cards, "continue" link, recent results.
+
 
 const Dashboard = {
-  // Labs ki list (dashboard par rows ban kar dikhti hain)
+
   experiments: [
     { screen: 'circuit', title: 'Circuit Lab',
       text: 'Put a battery, resistors and a switch in series or parallel and read the current and voltage.' },
@@ -1287,9 +1215,7 @@ const Dashboard = {
     Dashboard.renderRecent();
   },
 
-  // "VirtualLab" title intro: letters appear one by one, then the VL logo (the CSS does the timing).
-  // Plays once per page load: when the logo has landed we mark the hero as done, so coming back
-  // to the Dashboard later shows the finished title straight away.
+
   titleIntroReady: false,
   initTitleIntro() {
     if (Dashboard.titleIntroReady) return;
@@ -1324,7 +1250,7 @@ const Dashboard = {
     UI.byId('experiment-cards').innerHTML = html;
   },
 
-  // "Jahan chhoda tha wahan se" (prefs.lastExperiment)
+
   renderContinue() {
     const last = Store.getPrefs().lastExperiment;
     const exp = Dashboard.experiments.find((e) => e.screen === last);
@@ -1359,28 +1285,18 @@ const Dashboard = {
   },
 };
 
-/* ===== js/circuitSolver.js ===== */
-// circuitSolver.js
-// Pure logic for the Circuit Lab table: parts + wires -> net list -> DC solve.
-// No DOM here, so it can be tested in Node (tests/tests.js).
-//
-// A design looks like:
-//   { parts: [{ id, type, gx, gy, rot, value, closed }], wires: [{ id, a:{p,t}, b:{p,t}, route }] }
-//   type: 'battery' | 'resistor' | 'bulb' | 'switch' | 'ammeter' | 'voltmeter'
-//   Every part has 2 terminals: t = 0 and t = 1. Battery: t0 is minus, t1 is plus.
-//   gx, gy are grid cells of the part centre. Terminals sit 2 cells left/right of the centre,
-//   then rotate by rot * 90 degrees (clockwise on screen).
+
 
 const CircuitSolver = {
   GRID: 20,
-  HALF: 2,                 // terminal distance from centre, in grid cells
+  HALF: 2,                 
   AMMETER_OHMS: 1e-6,
   SWITCH_ON_OHMS: 1e-6,
   VOLTMETER_OHMS: 1e7,
-  BULB_RATED_WATTS: 0.5,   // glow = power / rated (max 1)
+  BULB_RATED_WATTS: 0.5,   
   TYPES: ['battery', 'resistor', 'bulb', 'switch', 'ammeter', 'voltmeter'],
 
-  // Default value of a new part (volts for battery, ohms for resistor/bulb)
+
   defaultValue(type) {
     if (type === 'battery') return 9;
     if (type === 'resistor') return 100;
@@ -1388,7 +1304,7 @@ const CircuitSolver = {
     return 0;
   },
 
-  // Terminal position in grid cells (offset from the part centre, rotated)
+
   terminalOffset(rot, t) {
     let x = t === 0 ? -CircuitSolver.HALF : CircuitSolver.HALF;
     let y = 0;
@@ -1401,8 +1317,7 @@ const CircuitSolver = {
     return { x: part.gx + o.x, y: part.gy + o.y };
   },
 
-  // Resistance of a part for the solver. null = open (no connection through the part).
-  // Voltage sources are handled separately.
+  
   partOhms(part) {
     const S = CircuitSolver;
     if (part.type === 'resistor' || part.type === 'bulb') return Number(part.value);
@@ -1412,8 +1327,7 @@ const CircuitSolver = {
     return null;
   },
 
-  // Net list: union-find over terminals joined by wires.
-  // Returns { netOf(partId, t) -> net index, nets: count, key(...) }
+  
   buildNetlist(design) {
     const parent = {};
     const key = (p, t) => p + ':' + t;
@@ -1428,7 +1342,7 @@ const CircuitSolver = {
     (design.wires || []).forEach((w) => {
       if (!w.a || !w.b) return;
       const ka = key(w.a.p, w.a.t), kb = key(w.b.p, w.b.t);
-      if (parent[ka] === undefined || parent[kb] === undefined) return; // wire to a missing part
+      if (parent[ka] === undefined || parent[kb] === undefined) return; 
       union(ka, kb);
     });
     const index = {};
@@ -1442,7 +1356,7 @@ const CircuitSolver = {
     return { netOf, nets: count };
   },
 
-  // Gaussian elimination with partial pivoting. Returns solution or null if singular.
+
   _gauss(A, b) {
     const n = b.length;
     for (let c = 0; c < n; c++) {
@@ -1466,12 +1380,7 @@ const CircuitSolver = {
     return x;
   },
 
-  // Solve the DC circuit (nodal analysis).
-  // Result: { status, message, warnings[], running, parts: { [id]: {v, i, p, glow} },
-  //           current, voltage, power, totalResistance }
-  //   status: 'empty' | 'nobattery' | 'open' | 'short' | 'error' | 'ok'
-  //   For each part: v = voltage across (t1 minus t0), i = current t0 -> t1 inside the part,
-  //   p = power (always >= 0), glow = 0..1 for bulbs.
+
   solve(design) {
     const S = CircuitSolver;
     const parts = design.parts || [];
@@ -1502,8 +1411,7 @@ const CircuitSolver = {
 
     const net = S.buildNetlist(design);
 
-    // Short circuit: a battery whose two ends are joined only by wires / closed switches / ammeters.
-    // Union-find over "zero resistance" parts, without crossing any battery.
+    
     const zp = {};
     const zf = (k) => { if (zp[k] === undefined) zp[k] = k; while (zp[k] !== k) { zp[k] = zp[zp[k]]; k = zp[k]; } return k; };
     parts.forEach((p) => {
@@ -1519,13 +1427,13 @@ const CircuitSolver = {
       return out;
     }
 
-    // Nodal analysis: unknowns = node voltages (net 0 is ground) + one current per battery.
+    
     const n = net.nets;
     const m = batteries.length;
     const size = (n - 1) + m;
     const A = []; const rhs = new Array(size).fill(0);
     for (let i = 0; i < size; i++) A.push(new Array(size).fill(0));
-    const idx = (netNo) => netNo - 1; // ground (0) has no row
+    const idx = (netNo) => netNo - 1; 
     const GMIN = 1e-12;
     for (let k = 1; k < n; k++) A[idx(k)][idx(k)] += GMIN;
 
@@ -1541,7 +1449,7 @@ const CircuitSolver = {
     batteries.forEach((bat, j) => {
       const row = (n - 1) + j;
       const minus = net.netOf(bat.id, 0), plus = net.netOf(bat.id, 1);
-      // current variable = current flowing out of the plus terminal into the circuit
+
       if (plus > 0) { A[idx(plus)][row] += 1; A[row][idx(plus)] += 1; }
       if (minus > 0) { A[idx(minus)][row] -= 1; A[row][idx(minus)] -= 1; }
       rhs[row] = Number(bat.value);
@@ -1562,17 +1470,17 @@ const CircuitSolver = {
       r.v = b - a;
       if (p.type === 'battery') {
         const j = batteries.indexOf(p);
-        r.i = -x[(n - 1) + j];   // current delivered out of the plus terminal
+        r.i = -x[(n - 1) + j];   
         r.p = r.v * r.i;
         r.v = Number(p.value);
       } else {
         const ohms = S.partOhms(p);
-        r.i = ohms === null ? 0 : (a - b) / ohms;   // current from t0 to t1
+        r.i = ohms === null ? 0 : (a - b) / ohms;   
         r.p = Math.abs(r.v * r.i);
         if (p.type === 'bulb') r.glow = Math.max(0, Math.min(1, r.p / S.BULB_RATED_WATTS));
         if ((p.type === 'resistor' || p.type === 'bulb') && Math.abs(r.i) > loadCurrent) loadCurrent = Math.abs(r.i);
       }
-      // clean tiny numerical noise
+
       if (Math.abs(r.i) < 1e-9) r.i = 0;
       if (Math.abs(r.v) < 1e-5) r.v = 0;
       if (r.p < 1e-12) r.p = 0;
@@ -1584,7 +1492,7 @@ const CircuitSolver = {
       return out;
     }
 
-    // Totals from the first battery
+
     const b0 = batteries[0];
     out.voltage = Number(b0.value);
     out.current = Math.abs(out.parts[b0.id].i);
@@ -1610,7 +1518,7 @@ const CircuitSolver = {
     return out;
   },
 
-  // How the loads are connected: 'series', 'parallel' or 'mixed'
+
   topology(design) {
     const S = CircuitSolver;
     const net = S.buildNetlist(design);
@@ -1628,7 +1536,7 @@ const CircuitSolver = {
     return 'mixed';
   },
 
-  // Plain number formatting (Utils is not loaded in Node tests)
+
   fmt(value, unit) {
     const v = Math.abs(value);
     let n;
@@ -1640,7 +1548,7 @@ const CircuitSolver = {
     return n + ' ' + unit;
   },
 
-  // ----- Preset circuits (grid cells, all wires straight) -----
+
   preset(name) {
     const mk = (id, type, gx, gy, rot, value, closed) => ({ id, type, gx, gy, rot, value: value === undefined ? CircuitSolver.defaultValue(type) : value, closed: closed !== false });
     const w = (id, ap, at, bp, bt) => ({ id, a: { p: ap, t: at }, b: { p: bp, t: bt }, route: 'auto' });
@@ -1674,11 +1582,7 @@ const CircuitSolver = {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = CircuitSolver;
 
-/* ===== js/circuitDraw.js ===== */
-// circuitDraw.js
-// Draws the lab table (grid, parts, wires, terminals) as one SVG string.
-// Colours come from CSS classes (css/style.css), so every theme works without code changes.
-// Geometry (terminal positions, wire routes) comes from CircuitSolver.
+
 
 const CircuitDraw = {
   CELL: 20,
@@ -1687,7 +1591,7 @@ const CircuitDraw = {
   NAMES: { battery: 'Battery', resistor: 'Resistor', bulb: 'Bulb', switch: 'Switch', ammeter: 'Ammeter', voltmeter: 'Voltmeter' },
   PREFIX: { battery: 'B', resistor: 'R', bulb: 'L', switch: 'S', ammeter: 'A', voltmeter: 'V' },
 
-  // Short names by position: B1, R1, R2, L1 ...
+
   names(design) {
     const count = {};
     const out = {};
@@ -1700,13 +1604,13 @@ const CircuitDraw = {
 
   px(cell) { return cell * CircuitDraw.CELL; },
 
-  // Wire polyline in grid cells, or null if a part is missing
+
   wirePoints(design, wire) {
     const S = CircuitSolver;
     const pa = (design.parts || []).find((p) => p.id === wire.a.p);
     const pb = (design.parts || []).find((p) => p.id === wire.b.p);
     if (!pa || !pb) return null;
-    // keep the whole route inside the table, so a wire never runs past the edge
+
     const C = CircuitDraw;
     const inTable = (q) => ({ x: Math.max(0, Math.min(C.COLS, q.x)), y: Math.max(0, Math.min(C.ROWS, q.y)) });
     const a = inTable(S.terminalCell(pa, wire.a.t)), b = inTable(S.terminalCell(pb, wire.b.t));
@@ -1722,7 +1626,7 @@ const CircuitDraw = {
     return typeof Utils !== 'undefined' ? Utils.formatWithUnit(value, unit) : CircuitSolver.fmt(value, unit);
   },
 
-  // Symbol of one part, drawn around (0,0) with terminals at x = -40 and +40
+
   symbol(p, res, isOn) {
     const lead = (x1, x2) => '<line class="lead" x1="' + x1 + '" y1="0" x2="' + x2 + '" y2="0"/>';
     if (p.type === 'battery') {
@@ -1747,14 +1651,14 @@ const CircuitDraw = {
         '<line class="body" x1="-22" y1="0" x2="' + (p.closed ? 26 : 22) + '" y2="' + (p.closed ? 0 : -18) + '"/>' +
         '<circle class="body-dot" cx="-22" cy="0" r="3.5"/><circle class="body-dot" cx="26" cy="0" r="3.5"/>';
     }
-    // meters: counter-rotate the letter so it stays upright
+
     const letter = p.type === 'ammeter' ? 'A' : 'V';
     return lead(-40, -16) + lead(16, 40) +
       '<circle class="body meter-ring" r="16"/>' +
       '<text class="meter-letter" text-anchor="middle" dominant-baseline="central" transform="rotate(' + (-(p.rot || 0) * 90) + ')">' + letter + '</text>';
   },
 
-  // Whole table. view = { selPart, selWire, running, result, temp, hover, wireMode }
+
   render(design, view) {
     const C = CircuitDraw, S = CircuitSolver;
     const W = C.COLS * C.CELL, H = C.ROWS * C.CELL;
@@ -1770,7 +1674,7 @@ const CircuitDraw = {
       '<filter id="lab-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7"/></filter></defs>' +
       '<rect class="table-bg" x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#lab-grid)" data-table="1"/>';
 
-    // wires
+
     (design.wires || []).forEach((w) => {
       const pts = C.wirePoints(design, w);
       if (!pts) return;
@@ -1784,7 +1688,7 @@ const CircuitDraw = {
         (live ? '<path class="wire-flow" d="' + d + '"/>' : '') + '</g>';
     });
 
-    // parts
+
     (design.parts || []).forEach((p) => {
       const r = result ? result.parts[p.id] : null;
       const sel = view.selPart === p.id;
@@ -1796,7 +1700,7 @@ const CircuitDraw = {
         C.symbol(p, r, true) + '</g></g>';
     });
 
-    // value labels (not rotated)
+
     (design.parts || []).forEach((p) => {
       const r = result ? result.parts[p.id] : null;
       const vertical = (p.rot || 0) % 2 === 1;
@@ -1823,7 +1727,7 @@ const CircuitDraw = {
       }
     });
 
-    // terminals (dots) on top of everything
+
     (design.parts || []).forEach((p) => {
       [0, 1].forEach((t) => {
         const c = S.terminalCell(p, t);
@@ -1834,7 +1738,7 @@ const CircuitDraw = {
       });
     });
 
-    // wire being drawn
+
     if (view.temp) {
       const pa = design.parts.find((p) => p.id === view.temp.from.p);
       if (pa) {
@@ -1845,18 +1749,14 @@ const CircuitDraw = {
     return svg + '</svg>';
   },
 
-  // Tiny icon for the tray buttons
+
   trayIcon(type) {
     const body = CircuitDraw.symbol({ type, closed: true, rot: 0 }, null, false);
     return '<svg class="tray-icon" viewBox="-44 -26 88 52" width="52" height="30" aria-hidden="true" focusable="false">' + body + '</svg>';
   },
 };
 
-/* ===== js/circuitLab.js ===== */
-// circuitLab.js
-// Circuit Lab screen: a lab table where you drag parts, draw wires and run the simulation.
-// Flow: user changes the table -> update() -> CircuitSolver.solve() -> CircuitDraw.render() + info panel.
-// Needs: CircuitSolver, CircuitDraw, Physics, Validation, Utils, UI, Store.
+
 
 const CircuitLab = {
   design: { parts: [], wires: [] },
@@ -1867,12 +1767,12 @@ const CircuitLab = {
   result: null,
   designId: null,
   counter: 0,
-  drag: null,        // part being moved or wire being drawn
-  tray: null,        // tray item being dragged onto the table
+  drag: null,        
+  tray: null,        
   suppressClick: false,
   ready: false,
 
-  // Tray items: what is shown, what gets added
+
   TRAY: [
     { type: 'battery', value: 9, label: 'Battery 9 V' },
     { type: 'battery', value: 1.5, label: 'Cell 1.5 V' },
@@ -1893,7 +1793,7 @@ const CircuitLab = {
       '<svg class="tray-icon" viewBox="-44 -26 88 52" width="52" height="30" aria-hidden="true" focusable="false"><polyline class="body" fill="none" points="-36,12 -10,12 -10,-12 36,-12"/><circle class="term-dot" cx="-36" cy="12" r="5"/><circle class="term-dot" cx="36" cy="-12" r="5"/></svg><span>Wire</span></button>';
 
     tray.addEventListener('pointerdown', CircuitLab.trayDown);
-    // move/up listen on the whole page, so a drag keeps working when the pointer leaves the tray
+
     document.addEventListener('pointermove', CircuitLab.trayMove);
     document.addEventListener('pointerup', CircuitLab.trayUp);
     document.addEventListener('pointercancel', CircuitLab.trayCancel);
@@ -1922,7 +1822,7 @@ const CircuitLab = {
     document.addEventListener('keydown', CircuitLab.onKey);
 
     CircuitLab.ready = true;
-    window.__lab = CircuitLab; // handy for tests
+    window.__lab = CircuitLab; 
   },
 
   onShow() {
@@ -1936,19 +1836,19 @@ const CircuitLab = {
     if (!CircuitLab.panned) { CircuitLab.panned = true; CircuitLab.panToParts(); }
   },
 
-  // Theme changed: draw again in the new colours
+
   redraw() {
     if (!CircuitLab.ready) return;
     CircuitLab.renderTable();
   },
 
-  // ---------- helpers ----------
+
   partById(id) { return CircuitLab.design.parts.find((p) => p.id === id); },
   newId(prefix) { CircuitLab.counter += 1; return prefix + CircuitLab.counter; },
   say(type, text) { UI.showMessage('circuit-feedback', type, text); },
   fmt(v, unit) { return Utils.formatWithUnit(v, unit); },
 
-  // Mouse/touch position on the table, in table pixels (the SVG is scaled with the screen)
+
   tablePoint(e) {
     const svg = UI.byId('circuit-canvas').querySelector('svg');
     const r = svg.getBoundingClientRect();
@@ -1976,7 +1876,7 @@ const CircuitLab = {
     return best;
   },
 
-  // ---------- adding parts ----------
+
   addPart(type, value, gx, gy) {
     CircuitLab.touched = true;
     const cell = CircuitLab.clampCell(gx, gy);
@@ -1997,7 +1897,7 @@ const CircuitLab = {
     return { gx: 20, gy: 12 };
   },
 
-  // Tray: drag onto the table (pointer events: mouse and touch). A plain click/tap/Enter adds at a free spot.
+
   trayDown(e) {
     const btn = e.target.closest('[data-tray]');
     if (!btn || e.button > 0) return;
@@ -2008,7 +1908,7 @@ const CircuitLab = {
     const t = CircuitLab.tray;
     if (!t || e.pointerId !== t.id) return;
     if (!t.moved && !t.scrolling && Math.hypot(e.clientX - t.x0, e.clientY - t.y0) > 8) {
-      // Phone: a sideways swipe on the tray scrolls the tray, it does not pick up a part
+
       if (t.touch && Math.abs(e.clientX - t.x0) > Math.abs(e.clientY - t.y0)) {
         t.scrolling = true;
         t.lastX = t.x0;
@@ -2038,7 +1938,8 @@ const CircuitLab = {
     CircuitLab.tray = null;
     if (t.ghost) t.ghost.remove();
     if (t.scrolling) { CircuitLab.suppressClick = true; setTimeout(() => { CircuitLab.suppressClick = false; }, 50); return; }
-    if (!t.moved) return; // plain click: the click handler adds the part
+
+    if (!t.moved) return; 
     CircuitLab.suppressClick = true;
     setTimeout(() => { CircuitLab.suppressClick = false; }, 50);
     const svg = UI.byId('circuit-canvas').querySelector('svg');
@@ -2075,7 +1976,6 @@ const CircuitLab = {
     CircuitLab.say('success', item.label + ' added. Drag it into place, press R to rotate, Delete to remove.');
   },
 
-  // ---------- pointer handling on the table ----------
   tableDown(e) {
     if (e.button > 0 || !e.isPrimary) return;
     const box = UI.byId('circuit-canvas');
@@ -2165,7 +2065,6 @@ const CircuitLab = {
     CircuitLab.update(true);
   },
 
-  // ---------- selection, rotate, delete, keys ----------
   select(partId, wireId) {
     CircuitLab.selPart = partId;
     CircuitLab.selWire = wireId;
@@ -2236,7 +2135,6 @@ const CircuitLab = {
     CircuitLab.update(false);
   },
 
-  // On a narrow screen the table scrolls sideways: bring the parts into view
   panToParts() {
     const box = UI.byId('circuit-canvas');
     const parts = CircuitLab.design.parts;
@@ -2246,7 +2144,6 @@ const CircuitLab = {
     box.scrollLeft = Math.max(0, minX * CircuitDraw.CELL * scale);
   },
 
-  // ---------- update + rendering ----------
   update(rebuildControls) {
     CircuitLab.result = CircuitSolver.solve(CircuitLab.design);
     if (rebuildControls) CircuitLab.renderControls();
@@ -2324,7 +2221,6 @@ const CircuitLab = {
         : '<p class="small text-muted-vl mt-2 mb-0">No parts yet.</p>') + totals;
   },
 
-  // Properties of the selected part / wire
   renderControls() {
     const box = UI.byId('circuit-controls');
     const names = CircuitDraw.names(CircuitLab.design);
@@ -2378,12 +2274,10 @@ const CircuitLab = {
     }
   },
 
-  // ---------- save / load ----------
   loads() {
     return CircuitLab.design.parts.filter((p) => p.type === 'resistor' || p.type === 'bulb');
   },
 
-  // Hand formula for the expected current (series or parallel); mixed circuits use the solver value
   theoryCurrent(r) {
     const top = CircuitSolver.topology(CircuitLab.design);
     const ohms = CircuitLab.loads().map((p) => Number(p.value));
@@ -2466,7 +2360,6 @@ const CircuitLab = {
       '<option value="' + Utils.escapeHtml(d.circuitId) + '">' + Utils.escapeHtml(d.name) + '</option>').join('');
   },
 
-  // Old samples only have a resistor list. Build a tidy layout from it.
   layoutFromLegacy(c) {
     const mk = (id, type, gx, gy, rot, value, closed) => ({ id, type, gx, gy, rot, value, closed: closed !== false });
     const parts = [], wires = [];
@@ -2515,7 +2408,6 @@ const CircuitLab = {
     const c = design.components;
     const layout = c.layout && Array.isArray(c.layout.parts) ? c.layout : CircuitLab.layoutFromLegacy(c);
     CircuitLab.design = JSON.parse(JSON.stringify({ parts: layout.parts, wires: layout.wires || [] }));
-    // keep every part (and so every wire end) on the table, even in an old saved layout
     CircuitLab.design.parts.forEach((p) => { Object.assign(p, CircuitLab.clampCell(p.gx, p.gy)); });
     CircuitLab.counter = 100;
     CircuitLab.touched = true;
@@ -2527,14 +2419,11 @@ const CircuitLab = {
   },
 };
 
-/* ===== js/projectile.js ===== */
-// projectile.js
-// Projectile Motion screen: inputs check -> simulate -> animate -> compare with theory.
 
 const Projectile = {
-  lastRun: null,      // last successful run (Save ke liye)
-  animationId: null,  // requestAnimationFrame id
-  lastDraw: null,     // last drawing ke arguments (theme badalne par redraw ke liye)
+  lastRun: null,      
+  animationId: null, 
+  lastDraw: null,     
 
   init() {
     const speed = UI.byId('proj-speed');
@@ -2552,8 +2441,6 @@ const Projectile = {
     if (!Projectile.lastRun) Projectile.showIdle();
   },
 
-  // Theme badla: jo drawing abhi dikh rahi hai use naye rangon mein dobara banao
-  // (animation chal rahi ho to agla frame hi naye rang se banega)
   redraw() {
     const d = Projectile.lastDraw;
     const box = UI.byId('proj-canvas');
@@ -2561,7 +2448,6 @@ const Projectile = {
     box.innerHTML = Projectile.drawScene(d.i, d.th, d.progress);
   },
 
-  // Inputs check karo. Sab theek ho to {ok:true, speed, angle, g}
   readInputs() {
     const speedEl = UI.byId('proj-speed');
     const angleEl = UI.byId('proj-angle');
@@ -2572,7 +2458,7 @@ const Projectile = {
     return { ok: s.ok && a.ok, speed: s.value, angle: a.value, g: Number(UI.byId('proj-gravity').value) };
   },
 
-  // Input badla: purana result ab match nahi karta
+
   onInputChange() {
     Projectile.stopAnimation();
     Projectile.lastRun = null;
@@ -2580,8 +2466,6 @@ const Projectile = {
     if (inputs.ok) Projectile.showIdle(inputs);
     else UI.byId('proj-readouts').innerHTML = '<p class="mb-0">Fix the highlighted input to see results.</p>';
   },
-
-  // Run se pehle: sirf theory dikhao aur khali graph
   showIdle(inputs) {
     const i = inputs || Projectile.readInputs();
     if (!i.ok) return;
@@ -2616,7 +2500,6 @@ const Projectile = {
     const sim = Physics.simulateProjectile(inputs.speed, inputs.angle, inputs.g);
     Projectile.lastRun = { inputs, theory: th, sim };
 
-    // Animation: asli time bahut lamba/chhota ho sakta hai, isliye 1.5 se 6 second mein dikhate hain
     const seconds = Math.min(6, Math.max(1.5, sim.timeOfFlight));
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const canvas = UI.byId('proj-canvas');
@@ -2650,7 +2533,7 @@ const Projectile = {
     UI.byId('proj-run').disabled = false;
   },
 
-  // Measured vs theory table
+
   showResults() {
     const run = Projectile.lastRun;
     if (!run) return;
@@ -2680,10 +2563,7 @@ const Projectile = {
       '<tbody>' + body + '</tbody></table></div>' +
       '<p class="small mt-2 mb-0">Theory: R = v²·sin(2θ)/g, T = 2v·sinθ/g, H = v²·sin²θ/(2g). No air resistance.</p>';
   },
-
-  // SVG drawing. progress: null = sirf axes, 0..1 = kitna path udaa
   drawScene(i, th, progress) {
-    // Rang CSS variables se (theme ke saath badalte hain). Last drawing yaad rakho taaki theme badalne par wahi dobara ban sake.
     Projectile.lastDraw = { i, th, progress };
     const bg = Utils.themeColor('--canvas', '#060b12');
     const axis = Utils.themeColor('--sim-axis', '#9fb4c9');
@@ -2691,12 +2571,12 @@ const Projectile = {
     const accent = Utils.themeColor('--accent', '#00f0ff');
     const W = 600, H = 300, left = 50, right = 20, top = 20, bottom = 40;
     const pw = W - left - right, ph = H - top - bottom;
-    // Dono axes ko same scale (metres -> pixels) taaki shape asli lage
+
     const scale = Math.min(pw / Math.max(th.range, 0.01), ph / Math.max(th.height, 0.01));
     const px = (x) => left + x * scale;
     const py = (y) => H - bottom - y * scale;
 
-    // Pura theory path (dotted)
+
     const pts = [];
     const n = 60;
     for (let k = 0; k <= n; k++) {
@@ -2772,14 +2652,12 @@ const Projectile = {
   },
 };
 
-/* ===== js/pendulum.js ===== */
-// pendulum.js
-// Pendulum screen: RK4 simulation se period nikalte hain, formula T = 2*pi*sqrt(L/g) se compare.
+
 
 const Pendulum = {
   lastRun: null,
   animationId: null,
-  lastDraw: null,     // last drawing ke arguments (theme badalne par redraw ke liye)
+  lastDraw: null,     
 
   init() {
     UI.linkRangeAndNumber(UI.byId('pend-length-range'), UI.byId('pend-length'), () => Pendulum.onInputChange());
@@ -2795,7 +2673,7 @@ const Pendulum = {
     if (!Pendulum.lastRun) Pendulum.showIdle();
   },
 
-  // Theme badla: jo drawing abhi dikh rahi hai use naye rangon mein dobara banao
+
   redraw() {
     const d = Pendulum.lastDraw;
     const box = UI.byId('pend-canvas');
@@ -2842,7 +2720,7 @@ const Pendulum = {
 
     const theory = Physics.pendulumPeriodTheory(inputs.length, inputs.g);
     const dt = 0.001;
-    const seconds = Math.min(15, theory * 3); // 3 swings tak animate
+    const seconds = Math.min(15, theory * 3); 
     const sim = Physics.simulatePendulum(inputs.length, inputs.angle, inputs.g, dt, seconds);
     Pendulum.lastRun = { inputs, theory, period: sim.period, status: null };
 
@@ -2858,7 +2736,7 @@ const Pendulum = {
     UI.byId('pend-run').disabled = true;
     const start = performance.now();
     const step = (now) => {
-      // max(0, ...) : pehle frame mein 'now' kabhi start se chhota hota hai
+
       const index = Math.max(0, Math.min(sim.samples.length - 1, Math.floor((now - start) / 1000 / dt)));
       canvas.innerHTML = Pendulum.drawScene(inputs, sim.samples[index]);
       if (index < sim.samples.length - 1) {
@@ -2896,19 +2774,19 @@ const Pendulum = {
       '<p class="small mt-2 mb-0">Theory: T = 2π√(L/g). No air resistance, string has no mass.</p>';
   },
 
-  // SVG: pivot upar, bob niche. theta radians (0 = seedha neeche)
+
   drawScene(i, theta) {
-    // Rang CSS variables se (theme ke saath badalte hain). Last drawing yaad rakho taaki theme badalne par wahi dobara ban sake.
+
     Pendulum.lastDraw = { i, theta };
     const bg = Utils.themeColor('--canvas', '#060b12');
     const axis = Utils.themeColor('--sim-axis', '#9fb4c9');
     const string = Utils.themeColor('--sim-string', '#8aa0b6');
     const accent = Utils.themeColor('--accent', '#00f0ff');
     const W = 600, H = 300, pivotX = W / 2, pivotY = 24;
-    const stringPx = 230 * (0.35 + 0.65 * (i.length / 5)); // length ke saath thoda lamba dikhe
+    const stringPx = 230 * (0.35 + 0.65 * (i.length / 5)); 
     const bx = pivotX + stringPx * Math.sin(theta);
     const by = pivotY + stringPx * Math.cos(theta);
-    // Start angle ka halka guide
+
     const sa = Physics.toRadians(i.angle);
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="sim-svg" xmlns="http://www.w3.org/2000/svg" focusable="false">' +
       '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="' + bg + '"/>' +
@@ -2959,13 +2837,11 @@ const Pendulum = {
   },
 };
 
-/* ===== js/results.js ===== */
-// results.js
-// Results screen (ResultsTable) + Result detail + CSV export.
+
 
 const Results = {
   filters: { search: '', type: 'all', status: 'all', sort: 'newest' },
-  visibleRows: [],  // jo rows abhi screen par hain (CSV isi se banta hai)
+  visibleRows: [],  
 
   init() {
     const form = UI.byId('filter-form');
@@ -2979,7 +2855,7 @@ const Results = {
     form.addEventListener('submit', (e) => e.preventDefault());
     UI.byId('btn-export-csv').addEventListener('click', Results.exportCsv);
 
-    // Table ke andar View / delete clicks
+
     UI.byId('results-body').addEventListener('click', (event) => {
       const row = event.target.closest('tr[data-id]');
       if (!row || event.target.closest('a')) return;
@@ -3000,7 +2876,7 @@ const Results = {
     Results.render();
   },
 
-  // Filter + sort lagao
+
   applyFilters(list) {
     const f = Results.filters;
     const q = f.search.trim().toLowerCase();
@@ -3025,7 +2901,7 @@ const Results = {
       '</div>';
   },
 
-  // Empty state ke button ko kaam karwao
+
   bindEmptyState(container) {
     const button = container.querySelector('[data-action="load-samples"]');
     if (!button) return;
@@ -3081,9 +2957,7 @@ const Results = {
       '</tbody></table></div>';
   },
 
-  // ---------- Detail ----------
 
-  // Input / output ke naam padhne layak banao
   labels: {
     topology: 'Circuit type', voltage: 'Battery voltage (V)', resistors: 'Resistors (Ω)', switchClosed: 'Switch closed',
     note: 'Note', speed: 'Launch speed (m/s)', angle: 'Launch angle (°)', gravity: 'Gravity (m/s²)',
@@ -3132,7 +3006,7 @@ const Results = {
     UI.byId('btn-delete-result').addEventListener('click', () => Results.askDelete(r));
   },
 
-  // Delete se pehle confirm (inline, popup nahi)
+
   askDelete(r) {
     UI.byId('detail-actions').innerHTML =
       '<div class="alert alert-warning mb-0" role="alert"><strong>Warning:</strong> Delete "' + Utils.escapeHtml(r.name) +
@@ -3152,7 +3026,7 @@ const Results = {
     });
   },
 
-  // ---------- CSV export (teacher only) ----------
+
 
   exportCsv() {
     if (!Roles.require('CSV export')) return;
@@ -3184,10 +3058,7 @@ const Results = {
   },
 };
 
-/* ===== js/teacher.js ===== */
-// teacher.js
-// Teacher Review screen: summary + "Needs repeat" list + sample data reload.
-// Student view mein ye screen khulti hi nahi (app.js guard karta hai).
+
 
 const Teacher = {
   onShow() {
@@ -3240,10 +3111,7 @@ const Teacher = {
   },
 };
 
-/* ===== js/app.js ===== */
-// app.js
-// Sabse last chalne wali file: app start, hash router, role switch.
-// Routes: #dashboard #circuit #projectile #pendulum #results #result/<id> #teacher #help
+
 
 const App = {
   screens: ['dashboard', 'circuit', 'projectile', 'pendulum', 'results', 'detail', 'teacher', 'help'],
@@ -3254,22 +3122,22 @@ const App = {
   currentScreen: '',
 
   start() {
-    // Loading state thodi der dikhao, phir app kholo
+   
     let reloaded = false;
-    try { reloaded = Store.ensureSampleData(); } catch (e) { /* storage band ho to memory use hoti hai */ }
+    try { reloaded = Store.ensureSampleData(); } catch (e) { }
 
     Roles.apply();
 
-    // Colour theme: swatches ko jodo, aur theme badalte hi drawings naye rangon mein dobara banao
+
     ThemeManager.init();
     document.addEventListener('themechange', () => {
-      try { CircuitLab.redraw(); } catch (e) { /* ek drawing fail ho to baaki chalein */ }
-      try { Projectile.redraw(); } catch (e) { /* same */ }
-      try { Pendulum.redraw(); } catch (e) { /* same */ }
+      try { CircuitLab.redraw(); } catch (e) { }
+      try { Projectile.redraw(); } catch (e) {  }
+      try { Pendulum.redraw(); } catch (e) {  }
     });
     UI.byId('role-select').addEventListener('change', (e) => {
       Roles.set(e.target.value);
-      App.route(); // role badla to current screen dobara check karo
+      App.route(); 
     });
 
     CircuitLab.init();
@@ -3286,7 +3154,7 @@ const App = {
     }, 350);
   },
 
-  // Hash padho aur screen dikhao
+
   route() {
     const hash = (location.hash || '#dashboard').replace('#', '');
     let name = hash.split('/')[0];
@@ -3294,7 +3162,7 @@ const App = {
     if (name === 'result') { name = 'detail'; detailId = decodeURIComponent(hash.split('/')[1] || ''); }
     if (!App.screens.includes(name)) name = 'dashboard';
 
-    // Teacher screen student ke liye band
+
     if (name === 'teacher' && !Roles.isTeacher()) {
       UI.showMessage('global-feedback', 'warning', 'Teacher Review is only available in Teacher view. Switch "View as" to Teacher to open it.');
       location.hash = '#dashboard';
@@ -3316,7 +3184,7 @@ const App = {
     if (name === 'detail') Results.showDetail(detailId);
     if (name === 'teacher') Teacher.onShow();
 
-    // Navbar: current page mark karo
+
     const navName = name === 'detail' ? 'results' : name;
     document.querySelectorAll('[data-screen]').forEach((link) => {
       if (link.dataset.screen === navName) link.setAttribute('aria-current', 'page');
@@ -3324,18 +3192,18 @@ const App = {
     });
     document.title = App.titles[name] + ' - VirtualLab Simulator';
 
-    // Last used experiment yaad rakho (Dashboard "Continue" ke liye)
+
     if (['circuit', 'projectile', 'pendulum'].includes(name)) {
       const prefs = Store.getPrefs();
       prefs.lastExperiment = name;
       Store.savePrefs(prefs);
     }
 
-    // Mobile menu band karo
+
     const nav = UI.byId('main-nav');
     if (nav && nav.classList.contains('show')) nav.classList.remove('show');
 
-    // Screen reader aur keyboard ke liye heading par focus
+
     if (changed) {
       const heading = document.querySelector('#screen-' + name + ' h1');
       if (heading) heading.focus({ preventScroll: true });
@@ -3343,7 +3211,7 @@ const App = {
     }
   },
 
-  // Data badalne ke baad current screen dobara draw karo
+  
   refreshCurrent() {
     App.route();
   },
