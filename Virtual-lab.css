@@ -1,42 +1,12 @@
-/* style.css - VirtualLab (dark theme, version 2)
-
-   Look: glossy black (near-black base, plain page, no moving background; the animated logo in the hero is the only thing that moves),
-   glassy dark surfaces with a thin bright top edge, one neon colour (green, cyan or pink, chosen in the top bar) used
-   with confidence, borders with a small hard shadow (no glow, no blur filters),
-   friendly rounded corners.
-   Bricolage Grotesque for headings, IBM Plex Sans for text,
-   IBM Plex Mono only for numbers and keyboard keys.
-
-   How this file is organised (search for the numbers):
-   1. Colours and fonts (CSS variables)   - change colours HERE
-   2. Page, text and links
-   3. Buttons
-   4. Top bar and Student/Teacher switch
-   5. Dashboard (hero and the three blocks under it)
-   6. Cards and messages
-   7. Forms
-   8. Drawings (SVG)
-   9. Readouts, status messages and badges
-  10. Tables and lists
-  11. Help page, footer, phone layout
-
-   The HTML loads Bootstrap first and this file after it,
-   so the rules here can override Bootstrap.
-*/
-
-/* =========================================================
-   1. COLOURS AND FONTS
-   ========================================================= */
 :root,
 [data-bs-theme="dark"] {
-  /* Everything that changes with the colour theme lives in the three html[data-theme] blocks
-     further down. The cyan values there are also the default if no theme is set. */
+
   --text: #f6f2ea;
   --muted: #dbe4ee;
   --ok: #8fd694;
   --warn: var(--accent);
 
-  /* the three theme swatches in the top bar always show their own colour */
+
   --swatch-green: #39ff14;
   --swatch-cyan: #00f0ff;
   --swatch-pink: #ff2bd6;
@@ -45,7 +15,7 @@
   --font-head: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  /* card gloss: thin bright top edge and a soft diagonal sheen inside cards (static) */
+
   --gloss-top: rgba(255, 255, 255, 0.22);
   --gloss-sheen: linear-gradient(118deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 26%, rgba(255, 255, 255, 0) 46%);
 
@@ -66,13 +36,7 @@
   --bs-heading-color: var(--text);
 }
 
-/* =========================================================
-   1b. THE THREE COLOUR THEMES
-   html[data-theme] is set by the tiny script in <head> (and by js/themeManager.js).
-   Each theme gives: the neon accent and its helpers, two neighbour colours for the
-   dark ink for text on the accent, the tinted dark surfaces, the
-   drawing colours used by the simulators, and the error colour.
-   ========================================================= */
+
 html[data-theme="cyan"],
 html:not([data-theme]) {
   --accent: #00f0ff;
@@ -194,19 +158,17 @@ html[data-theme="pink"] {
   --err-rgb: 255, 154, 107;
 }
 
-/* While the theme changes, colours ease over instead of jumping (skipped for reduced motion) */
+
 @media (prefers-reduced-motion: no-preference) {
   html.theme-fade, html.theme-fade *, html.theme-fade *::before, html.theme-fade *::after {
     transition: color 0.4s ease, background-color 0.4s ease, border-color 0.4s ease, fill 0.4s ease, stroke 0.4s ease !important;
   }
 }
 
-/* =========================================================
-   2. PAGE, TEXT AND LINKS
-   ========================================================= */
+
 body {
   color: var(--text);
-  /* plain glossy black: a still dark gradient, tinted a little by the theme */
+
   background: var(--bg) linear-gradient(180deg, rgb(var(--bg-top-rgb)) 0%, rgb(var(--bg-mid-rgb)) 45%, rgb(var(--bg-bot-rgb)) 100%) fixed;
   min-height: 100vh;
   font-family: var(--font-body);
@@ -221,7 +183,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   color: var(--text);
 }
 h1 { font-size: clamp(2.1rem, 4vw, 2.9rem); font-weight: 800; line-height: 1.1; margin-bottom: 0.6rem; }
-/* page titles other than the hero get a short neon bar under them */
+
 main > .screen > h1:not(.hero-title)::after {
   content: ""; display: block; width: 3.2rem; height: 6px; margin-top: 0.55rem;
   background: var(--accent); border-radius: 3px;
@@ -248,11 +210,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 }
 .skip-link:focus { top: 8px; }
 
-/* =========================================================
-   3. BUTTONS
-   Primary = solid neon accent with a darker block underneath.
-   Outline = thick grey border. Both "press down" when clicked.
-   ========================================================= */
+
 .btn {
   --bs-btn-border-radius: var(--radius-sm);
   --bs-btn-padding-x: 1.25rem;
@@ -272,7 +230,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
   --bs-btn-disabled-color: var(--on-accent); --bs-btn-disabled-bg: var(--accent); --bs-btn-disabled-border-color: var(--accent);
   font-weight: 700;
   box-shadow: 3px 3px 0 var(--accent-deep), inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -2px 0 var(--shade-1);
-  /* glossy: bright upper half, a clean break in the middle */
+
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.10) 49%, rgba(255, 255, 255, 0) 51%, var(--shade-2) 100%);
 }
 
@@ -302,9 +260,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 .btn-link:hover { text-decoration: underline; }
 .btn-close { min-height: 0; }
 
-/* =========================================================
-   4. TOP BAR AND STUDENT / TEACHER SWITCH
-   ========================================================= */
+
 .vl-navbar {
   position: sticky; top: 0; z-index: 1020;
   background: linear-gradient(180deg, var(--nav-top) 0%, var(--nav-bottom) 100%);
@@ -317,7 +273,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
   font-family: var(--font-head); font-weight: 800; font-size: 1.35rem; letter-spacing: -0.01em;
   color: var(--text); margin-right: 1.5rem;
 }
-/* the logo: the VL image (see-through background, keeps its own colours in every theme) */
+
 .brand-logo { display: block; flex: none; height: 40px; width: auto; max-width: none; }
 
 .vl-navbar .navbar-nav { gap: 0.3rem; }
@@ -330,7 +286,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 .vl-navbar .navbar-toggler { border: 2px solid var(--line-strong); border-radius: var(--radius-sm); }
 .vl-navbar .navbar-toggler-icon { filter: invert(1); }
 
-/* Colour theme switcher: three round swatches, hand-made look (flat fill, dark rim, small hard shadow, no glow) */
+
 .theme-switch { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; border: 0; }
 .theme-switch-label { margin: 0; white-space: nowrap; color: var(--muted); font-size: 0.92rem; }
 .theme-dot {
@@ -343,15 +299,15 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 .theme-dot[data-theme-choice="green"] { --swatch: var(--swatch-green); }
 .theme-dot[data-theme-choice="cyan"]  { --swatch: var(--swatch-cyan); }
 .theme-dot[data-theme-choice="pink"]  { --swatch: var(--swatch-pink); }
-/* bigger touch area than the dot itself */
+
 .theme-dot::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; }
 .theme-dot:hover { transform: translate(-1px, -1px); }
-/* the chosen one: a plain light ring with a small gap, sits pressed in (no shadow) */
+
 .theme-dot[aria-pressed="true"] {
   box-shadow: 0 0 0 2px var(--surface-solid), 0 0 0 4px var(--text);
   transform: none;
 }
-/* keyboard focus: the usual accent outline, kept clear of the ring */
+
 .theme-dot:focus-visible { outline: 2px solid var(--text); outline-offset: 6px; }
 .theme-dot[aria-pressed="true"]:focus-visible { outline-offset: 7px; }
 @media (max-width: 991.98px) {
@@ -367,11 +323,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 .role-label { margin: 0; white-space: nowrap; color: var(--muted); font-size: 0.92rem; }
 .role-switch .form-select { width: auto; min-width: 110px; }
 
-/* =========================================================
-   5. DASHBOARD
-   Big intro with a neon picture block, then three blocks
-   with a heading on the left.
-   ========================================================= */
+
 .hero { padding: 2.25rem 0 3rem; }
 .hero-kicker {
   display: inline-block; margin: 0 0 1.1rem; padding: 0.3rem 0.8rem;
@@ -382,7 +334,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
   font-size: clamp(2.5rem, 5.4vw, 4.1rem); font-weight: 800; line-height: 1.04; letter-spacing: -0.02em;
   max-width: 12em; margin: 0 0 1.3rem;
 }
-/* the neon marker line under the last words of the heading */
+
 .hl {
   color: #fff; text-decoration: underline; text-decoration-color: var(--accent);
   text-decoration-thickness: 0.13em; text-underline-offset: 0.12em; text-decoration-skip-ink: none;
@@ -392,23 +344,14 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 .hero-link { margin-left: 0.4rem; color: var(--text); font-weight: 500; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
 .hero-link:hover { color: var(--accent); }
 
-/* ---- hero logo ----
-   The VirtualLab logo (rounded tile + flask line drawing) as big thin line art
-   behind the hero, to the right of the heading. Flat strokes, no glow, colours from the theme.
-   Calm movement: the lines draw themselves in and fade out (12 s loop), the whole mark floats and turns a
-   little (13 s), and a few small bubbles rise in the flask. Reduced motion: the full logo, standing still. */
+
 .hero { position: relative; min-height: 30rem; display: flex; align-items: center; }
 .hero > .row { position: relative; z-index: 1; width: 100%; }
 .hero-logo {
   position: absolute; z-index: 0; right: 0; top: 50%; width: min(32rem, 46%); aspect-ratio: 1;
   transform: translateY(-50%); pointer-events: none;
 }
-/* ---- title intro ----
-   "VirtualLab" appears letter by letter (about 90 ms each) with a thin caret, then the VL logo fades in.
-   On a laptop the big logo takes the place of the line-art logo (which fades out); on a phone the
-   logo sits at the end of the word. js/dashboard.js wraps the letters and adds .vl-anim on the hero.
-   The logo image has a see-through background (made from the dark JPG), so it blends into any theme
-   and keeps its own colours. Reduced motion: the finished title, no movement. */
+
 .vl-wordmark {
   display: flex; align-items: center; flex-wrap: nowrap; gap: 0.2em; margin: 0 0 1rem;
   font-family: var(--font-head); font-weight: 800; font-size: clamp(2.6rem, 6vw, 4.8rem);
@@ -465,7 +408,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 .hero-logo .hl-tile, .hero-logo .hl-flask, .hero-logo .hl-liquid {
   fill: none; stroke-linecap: round; stroke-linejoin: round;
 }
-/* stroke widths are in logo units (the logo is 34 units wide), so the lines scale with the mark */
+
 .hero-logo .hl-tile { stroke: rgba(var(--accent-rgb), 0.75); stroke-width: 0.13px; --hl-o: 0.65; opacity: var(--hl-o); }
 .hero-logo .hl-flask { stroke: var(--accent); stroke-width: 0.2px; --hl-o: 0.85; opacity: var(--hl-o); }
 .hero-logo .hl-liquid { stroke: rgba(var(--accent-rgb), 0.75); stroke-width: 0.2px; --hl-o: 0.9; opacity: var(--hl-o); }
@@ -484,7 +427,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
   from { transform: translateY(-1.5%) rotate(-2deg) scale(0.99); }
   to   { transform: translateY(1.5%) rotate(2deg) scale(1.02); }
 }
-/* draw in (0-38%), hold, then fade out (86-96%) and start again */
+
 @keyframes hl-draw {
   0%   { stroke-dashoffset: 1; opacity: 0; }
   3%   { opacity: var(--hl-o); }
@@ -518,7 +461,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 }
 .side-note { color: var(--muted); font-size: 1rem; margin: 0; }
 
-/* Lab list: each lab is a bordered row with a hard shadow */
+
 .lab-list { display: grid; gap: 1rem; }
 .lab-row {
   display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
@@ -550,9 +493,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
 }
 .steps-list b { display: block; color: var(--text); font-family: var(--font-head); font-size: 1.25rem; font-weight: 700; margin-bottom: 0.2rem; }
 
-/* =========================================================
-   6. CARDS AND MESSAGES
-   ========================================================= */
+
 .card {
   --bs-card-bg: var(--surface);
   --bs-card-border-width: 2px;
@@ -571,9 +512,6 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
   border: 2px dashed var(--line-strong); background: transparent; border-radius: var(--radius); padding: 2rem 1rem;
 }
 
-/* =========================================================
-   7. FORMS
-   ========================================================= */
 .form-label, legend.form-label { color: var(--text); font-weight: 600; font-size: 0.98rem; }
 .form-control, .form-select {
   background-color: var(--input-bg); color: var(--text);
@@ -613,11 +551,7 @@ input[type="number"], .readout-value { font-family: var(--font-mono); }
 .component-row { border-bottom: 2px solid var(--line); padding: 12px 0; }
 .component-row:last-child { border-bottom: 0; }
 
-/* =========================================================
-   8. DRAWINGS (SVG)
-   Colours for the drawings are set in circuitDraw.js,
-   projectile.js and pendulum.js.
-   ========================================================= */
+
 .canvas-box {
   background: var(--canvas); border: 2px solid var(--line); border-radius: var(--radius-sm);
   overflow-x: auto; padding: 4px;
@@ -630,7 +564,7 @@ input[type="number"], .readout-value { font-family: var(--font-mono); }
   .flow { animation: none; stroke-dasharray: 2 16; }
 }
 
-/* ---- Circuit Lab workbench ---- */
+
 html[data-theme="cyan"] { --lab-glow: #ffe27a; }
 html[data-theme="green"] { --lab-glow: #f4ff7a; }
 html[data-theme="pink"] { --lab-glow: #ffc46b; }
@@ -721,9 +655,7 @@ html[data-theme="pink"] { --lab-glow: #ffc46b; }
 .readout-grid { grid-template-columns: repeat(2, 1fr); }
 @media (min-width: 992px) { .lab-svg { min-width: 0; } }
 
-/* =========================================================
-   9. READOUTS, STATUS MESSAGES AND BADGES
-   ========================================================= */
+
 .readout-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .readout-tile { background: var(--surface-2); background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 55%); border: 2px solid var(--line); border-radius: var(--radius-sm); padding: 8px 12px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14); }
 .readout-label { font-size: 0.88rem; color: var(--muted); }
@@ -748,9 +680,7 @@ html[data-theme="pink"] { --lab-glow: #ffc46b; }
 .badge-ok   { background: rgba(143, 214, 148, 0.16); color: var(--ok); }
 .badge-warn { background: rgba(var(--accent-rgb), 0.15); color: var(--accent); }
 
-/* =========================================================
-   10. TABLES AND LISTS
-   ========================================================= */
+
 .table {
   --bs-table-color: var(--text); --bs-table-bg: transparent;
   --bs-table-border-color: var(--line);
@@ -780,9 +710,7 @@ dl.row dd { color: var(--text); font-family: var(--font-mono); }
 .modal-content { background: var(--surface-solid); background-image: var(--gloss-sheen); border: 2px solid var(--line-strong); box-shadow: 8px 8px 0 var(--shadow); border-radius: var(--radius); }
 .modal-header, .modal-footer { border-color: var(--line); }
 
-/* =========================================================
-   11. HELP PAGE, FOOTER AND PHONE LAYOUT
-   ========================================================= */
+
 details { background: var(--surface-2); background-image: var(--gloss-sheen); box-shadow: inset 0 1px 0 var(--gloss-top); border: 2px solid var(--line-strong); border-radius: var(--radius-sm); padding: 0.8rem 1.1rem; }
 summary { cursor: pointer; font-weight: 700; }
 details[open] summary { color: var(--accent); }
@@ -833,15 +761,12 @@ details[open] summary { color: var(--accent); }
 }
 #global-feedback .alert { margin-bottom: 1.5rem !important; }
 
-/* =========================================================
-   NEON TOUCH
-   Thin neon outline on the lab rows. Flat, no glow.
-   ========================================================= */
+
 .lab-row { border-color: rgba(var(--accent-rgb), 0.3); }
 .lab-row:hover { border-color: var(--accent); }
 
 .lab-info-wrap { overflow-x: auto; overflow-y: hidden; }
 
-/* Circuit Lab animation in the hero (replaces the pendulum/VL picture) */
+
 .hero-circuit-canvas { display: block; width: 100%; height: auto; }
 .hero-vl .hero-circuit-float { animation: none; }
