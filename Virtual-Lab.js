@@ -11,8 +11,8 @@
   var TEXT = [246, 242, 234];  
 
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-
+ 
+  
   var THEME_RGB = {
     green: [57, 255, 20],    
     cyan: [0, 240, 255],     
@@ -28,7 +28,7 @@
   var fromRGB = ACC.slice();   
   var fadeStart = 0, fading = false;
 
-
+  
   function aimTheme(instant) {
     var next = themeNow();
     if (next[0] === target[0] && next[1] === target[1] && next[2] === target[2]) return;
@@ -39,7 +39,7 @@
     fading = true;
   }
 
-
+  
   function stepTheme(now) {
     if (!fading) return;
     var p = (now - fadeStart) / FADE_MS;
@@ -48,17 +48,17 @@
     for (var c = 0; c < 3; c++) ACC[c] = Math.round(fromRGB[c] + (target[c] - fromRGB[c]) * e);
   }
 
-
+  
   var F = 770, Z0 = 700;
   var CX = W / 2, CY = 190;
 
-
+  
   var BX = 210, BZ = 130;      
   var WX = 165, WZ = 88;       
   var LX = 34;                 
   var BAT_X = -WX, RES_X = WX;
 
-
+  
   var CORNERS = [[-WX, -WZ], [-WX, WZ], [WX, WZ], [WX, -WZ]];
   var SEGS = [], PERIM = 0;
   var i;
@@ -69,13 +69,13 @@
     PERIM += len;
   }
 
-
+  
   var LOOP = 8;                
   var DOTS = 7;
   var SPEED = PERIM / LOOP;    
   var TRAIL = 14, TRAIL_GAP = 4.5;
 
-
+  
   function pathPoint(s) {
     s = ((s % PERIM) + PERIM) % PERIM;
     for (var j = 0; j < SEGS.length; j++) {
@@ -88,21 +88,21 @@
     return [0, 1.2, 0];
   }
 
-
+  
   function pose(t) {
     var yaw = 0.5 * Math.sin(t * 2 * Math.PI / 14);                              
     var tilt = (-55 + 3 * Math.sin(t * 2 * Math.PI / 10 + 1)) * Math.PI / 180;   
     return { cy: Math.cos(yaw), sy: Math.sin(yaw), ct: Math.cos(tilt), st: Math.sin(tilt) };
   }
 
-
+  
   function rot(x, y, z, S) {
     var x1 = x * S.cy + z * S.sy;
     var z1 = -x * S.sy + z * S.cy;
     return [x1, y * S.ct - z1 * S.st, y * S.st + z1 * S.ct];
   }
 
-
+  
   function proj(x, y, z, S) {
     var r = rot(x, y, z, S);
     var d = Z0 + r[2];
@@ -110,7 +110,7 @@
     return [CX + r[0] * k, CY - r[1] * k, k, d];
   }
 
-
+  
   var FACES = [
     { n: [0, 1, 0], v: [[-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]] },
     { n: [0, 0, 1], v: [[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]] },
@@ -129,7 +129,7 @@
     for (var f = 0; f < 6; f++) {
       var face = FACES[f];
       var nr = rot(face.n[0], face.n[1], face.n[2], S);
-      if (nr[2] >= 0) continue;                      
+      if (nr[2] >= 0) continue;                       
       var lit = nr[0] * LIGHT[0] + nr[1] * LIGHT[1] + nr[2] * LIGHT[2];
       var shade = 0.4 + 0.6 * Math.max(0, lit);
       var p = [];
@@ -151,7 +151,7 @@
     }
   }
 
-
+  
   function poly(pts, rgba, width) {
     ctx.beginPath();
     ctx.moveTo(pts[0][0], pts[0][1]);
@@ -165,7 +165,7 @@
     return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
   }
 
-
+  
   function drawGrid(S) {
     var Y = -44, STEP = 40, EX = 360, EZ = 240, PIECES = 12;
     ctx.lineWidth = 1;
@@ -189,7 +189,7 @@
     for (z = -EZ; z <= EZ; z += STEP) seg(-EX, z, EX, z);
   }
 
-
+  
   function drawPads(S) {
     var x, z;
     for (x = -180; x <= 180; x += 30) {
@@ -203,7 +203,7 @@
     }
   }
 
-
+  
   function drawTrace(S) {
     var pts = [];
     for (var i2 = 0; i2 <= 4; i2++) {
@@ -218,7 +218,7 @@
     poly(pts, rgba(ACC, 0.75), 1.6);
   }
 
-
+  
   function drawPool(S, b) {
     var p = proj(LX, 0.3, WZ, S);
     var r = 80 * p[2];
@@ -236,7 +236,7 @@
     ctx.restore();
   }
 
-
+  
   function drawDots(t, S, b) {
     var head0 = t * SPEED;
     var k, i3;
@@ -294,7 +294,7 @@
     ctx.arc(p[0], p[1], r, 0, Math.PI * 2);
     ctx.fillStyle = g;
     ctx.fill();
-
+    
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     var hr = 46 * p[2];
@@ -324,7 +324,7 @@
   function draw(t) {
     stepTheme(performance.now());   
     var S = pose(t);
-
+    
     var b = 0.35 + 0.65 * (0.5 - 0.5 * Math.cos(2 * Math.PI * t / LOOP));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
@@ -346,8 +346,8 @@
     drawLabels(S, b);
   }
 
-
-
+  
+  
   if (window.MutationObserver) {
     new MutationObserver(function () {
       aimTheme(reduce);
@@ -355,13 +355,13 @@
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 
-
+  
   if (reduce) {
     draw(2.0);
     return;
   }
 
-
+  
   var start = performance.now();
   var frozen = false;
   function frame(now) {
@@ -370,7 +370,7 @@
     requestAnimationFrame(frame);
   }
 
-
+  
   window.__heroCircuitDraw = function (t) { draw(t); };
   window.__heroCircuitFreeze = function () { frozen = true; };
 
@@ -378,35 +378,31 @@
 })();
 
 
-
 const Physics = {
-
+  
   G_EARTH: 9.81,
-
-
-
 
   seriesResistance(ohmsList) {
     return ohmsList.reduce((sum, r) => sum + r, 0);
   },
 
-
+  
   parallelResistance(ohmsList) {
     const sumOfInverses = ohmsList.reduce((sum, r) => sum + 1 / r, 0);
     return 1 / sumOfInverses;
   },
 
-
+  
   current(volts, ohms) {
     return volts / ohms;
   },
 
-
+  
   power(volts, amps) {
     return volts * amps;
   },
-
-
+ 
+  
   solveCircuit(model) {
     const bad = (status, message) => ({
       status, message, warnings: [],
@@ -415,12 +411,12 @@ const Physics = {
     const OPEN_MESSAGE =
       'The circuit is not closed, so no current flows. Close the switch or connect the wires.';
 
-
+    
     if (!model.hasBattery) {
       return bad('empty', 'No battery yet. Add a battery from the palette to start.');
     }
 
-
+    
     if (!(model.voltage > 0) || !isFinite(model.voltage)) {
       return bad('invalid', 'Battery voltage must be greater than 0 volts.');
     }
@@ -430,7 +426,7 @@ const Physics = {
       }
     }
 
-
+    
     if (model.switchPresent && !model.switchClosed) {
       return bad('open', OPEN_MESSAGE);
     }
@@ -440,9 +436,9 @@ const Physics = {
     const warnings = [];
 
     if (model.topology === 'series') {
-
+      
       if (loose.length > 0) return bad('open', OPEN_MESSAGE);
-
+      
       if (connected.length === 0) {
         return bad('short',
           'Short circuit: the battery is connected with no resistance in the path, so the current would be dangerously large. Add a resistor.');
@@ -460,7 +456,8 @@ const Physics = {
       };
     }
 
-  
+    
+    
     if (model.wireCount > 0) {
       return bad('short',
         'Short circuit: a plain wire branch has no resistance, so the current would be dangerously large. Remove the wire or add a resistor in that branch.');
@@ -494,29 +491,29 @@ const Physics = {
     };
   },
 
-
+  
 
   toRadians(deg) {
     return (deg * Math.PI) / 180;
   },
 
-
+  
   projectileRange(speed, angleDeg, g) {
     return (speed * speed * Math.sin(2 * Physics.toRadians(angleDeg))) / g;
   },
 
-
+  
   projectileTimeOfFlight(speed, angleDeg, g) {
     return (2 * speed * Math.sin(Physics.toRadians(angleDeg))) / g;
   },
 
-
+  
   projectileMaxHeight(speed, angleDeg, g) {
     const vy = speed * Math.sin(Physics.toRadians(angleDeg));
     return (vy * vy) / (2 * g);
   },
 
-
+  
   projectilePosition(speed, angleDeg, g, t) {
     const a = Physics.toRadians(angleDeg);
     return {
@@ -525,7 +522,8 @@ const Physics = {
     };
   },
 
-
+  
+  
   simulateProjectile(speed, angleDeg, g, dt = 0.0005) {
     const a = Physics.toRadians(angleDeg);
     let x = 0, y = 0, t = 0, maxY = 0;
@@ -549,13 +547,11 @@ const Physics = {
     return { range: x, timeOfFlight: t, maxHeight: maxY };
   },
 
-
-
-
+  
   pendulumPeriodTheory(length, g) {
     return 2 * Math.PI * Math.sqrt(length / g);
   },
-
+ 
   
   simulatePendulum(length, startAngleDeg, g, dt = 0.001, durationSeconds = 0) {
     const accel = (theta) => -(g / length) * Math.sin(theta);
@@ -565,7 +561,7 @@ const Physics = {
     let period = null;
     const samples = [theta];
     const maxTime = Math.max(durationSeconds, 0);
-
+    
     for (let i = 0; i < 3000000; i++) {
       const k1t = omega,              k1w = accel(theta);
       const k2t = omega + 0.5 * dt * k1w, k2w = accel(theta + 0.5 * dt * k1t);
@@ -573,7 +569,7 @@ const Physics = {
       const k4t = omega + dt * k3w,   k4w = accel(theta + dt * k3t);
       const newTheta = theta + (dt / 6) * (k1t + 2 * k2t + 2 * k3t + k4t);
       const newOmega = omega + (dt / 6) * (k1w + 2 * k2w + 2 * k3w + k4w);
-
+      
       if (period === null && theta > 0 && newTheta <= 0) {
         const fraction = theta / (theta - newTheta);
         period = 4 * (t + dt * fraction);
@@ -585,13 +581,12 @@ const Physics = {
     return { period, samples };
   },
 
-  
   percentDifference(measured, theory) {
     if (theory === 0) return 0;
     return (Math.abs(measured - theory) / Math.abs(theory)) * 100;
   },
 
-
+  
   statusFromDifference(diffPercent, tolerancePercent) {
     return diffPercent <= tolerancePercent ? 'Matched' : 'Needs repeat';
   },
@@ -600,10 +595,8 @@ const Physics = {
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Physics;
 
-
-
 const Validation = {
-
+  
   toNumber(text) {
     if (text === null || text === undefined) return NaN;
     const cleaned = String(text).trim();
@@ -611,6 +604,8 @@ const Validation = {
     return Number(cleaned);
   },
 
+  
+  
   validateNumber(text, options) {
     const { label, unit = '', min = -Infinity, max = Infinity, minExclusive = false } = options;
     const value = Validation.toNumber(text);
@@ -633,7 +628,7 @@ const Validation = {
     return { ok: true, value, message: '' };
   },
 
-
+  
   validateResistance(text) {
     const result = Validation.validateNumber(text, {
       label: 'Resistance', unit: 'ohms', min: 0, max: 1000000, minExclusive: true,
@@ -674,7 +669,7 @@ const Validation = {
     });
   },
 
-
+  
   validateName(text) {
     const name = String(text || '').trim();
     if (name === '') {
@@ -691,20 +686,22 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Validation
 
 
 
-const Utils = {
 
+
+const Utils = {
+  
   formatNumber(value, decimals = 3) {
     if (value === null || value === undefined || Number.isNaN(value)) return '—';
     return String(parseFloat(Number(value).toFixed(decimals)));
   },
 
-
+  
   formatWithUnit(value, unit, decimals = 3) {
     if (value === null || value === undefined || Number.isNaN(value)) return '—';
     return Utils.formatNumber(value, decimals) + ' ' + unit;
   },
 
-
+  
   escapeHtml(text) {
     return String(text)
       .replace(/&/g, '&amp;')
@@ -714,7 +711,8 @@ const Utils = {
       .replace(/'/g, '&#39;');
   },
 
-
+  
+  
   csvCell(value) {
     let text = value === null || value === undefined ? '' : String(value);
     if (/^[=+\-@]/.test(text) && Number.isNaN(Number(text))) text = "'" + text;
@@ -722,13 +720,16 @@ const Utils = {
     return text;
   },
 
-
+  
   toCsv(headers, rows) {
     const lines = [headers.map(Utils.csvCell).join(',')];
     rows.forEach((row) => lines.push(row.map(Utils.csvCell).join(',')));
     return lines.join('\r\n');
   },
 
+  
+  
+  
   _themeCache: { theme: null, values: {} },
   themeColor(name, fallback) {
     const fb = fallback || '#00f0ff';
@@ -745,12 +746,12 @@ const Utils = {
     }
   },
 
-
+  
   clearThemeCache() {
     Utils._themeCache = { theme: null, values: {} };
   },
 
-
+  
   makeId(prefix) {
     return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   },
@@ -760,17 +761,24 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Utils;
 
 
 
+
+
+
+
+
+
+
 const ThemeManager = {
   KEY: 'vlab-theme',
   THEMES: ['green', 'cyan', 'pink'],
   DEFAULT: 'cyan',
 
-
+  
   normalize(value) {
     return ThemeManager.THEMES.indexOf(value) >= 0 ? value : ThemeManager.DEFAULT;
   },
 
-
+  
   load(storage) {
     try {
       const store = storage || window.localStorage;
@@ -780,7 +788,7 @@ const ThemeManager = {
     }
   },
 
-
+  
   save(theme, storage) {
     try {
       const store = storage || window.localStorage;
@@ -799,13 +807,13 @@ const ThemeManager = {
     }
   },
 
-
+  
   apply(theme, persist) {
     const next = ThemeManager.normalize(theme);
     const root = document.documentElement;
     const changed = root.getAttribute('data-theme') !== next;
     if (changed) {
-
+      
       root.classList.add('theme-fade');
       window.clearTimeout(ThemeManager._fadeTimer);
       ThemeManager._fadeTimer = window.setTimeout(() => root.classList.remove('theme-fade'), 500);
@@ -823,7 +831,7 @@ const ThemeManager = {
     return next;
   },
 
-
+  
   syncButtons(theme) {
     document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
       btn.setAttribute('aria-pressed', btn.getAttribute('data-theme-choice') === theme ? 'true' : 'false');
@@ -835,7 +843,7 @@ const ThemeManager = {
     document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
       btn.addEventListener('click', () => ThemeManager.apply(btn.getAttribute('data-theme-choice'), true));
     });
-
+    
     window.addEventListener('storage', (e) => {
       if (e.key === ThemeManager.KEY) ThemeManager.apply(ThemeManager.normalize(e.newValue), false);
     });
@@ -843,7 +851,6 @@ const ThemeManager = {
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = ThemeManager;
-
 
 const SampleData = {
   circuits() {
@@ -952,7 +959,6 @@ const SampleData = {
 if (typeof module !== 'undefined' && module.exports) module.exports = SampleData;
 
 
-
 const Store = {
   KEYS: {
     circuits: 'virtuallab_circuits',
@@ -960,25 +966,25 @@ const Store = {
     prefs: 'virtuallab_prefs',
   },
 
-
+  
   memory: {},
-
+  
   lastProblem: '',
 
-
+  
   readRaw(key) {
     try {
       const text = window.localStorage.getItem(key);
       if (text === null) return undefined;
       return JSON.parse(text);
     } catch (error) {
-
+      
       if (key in Store.memory) return Store.memory[key];
       return null;
     }
   },
 
-
+  
   write(key, value) {
     Store.memory[key] = value;
     try {
@@ -992,7 +998,7 @@ const Store = {
     }
   },
 
-
+  
   ensureSampleData() {
     let reloaded = false;
     const circuits = Store.readRaw(Store.KEYS.circuits);
@@ -1008,14 +1014,14 @@ const Store = {
     return reloaded;
   },
 
-
+  
   resetSampleData() {
     const a = Store.write(Store.KEYS.circuits, SampleData.circuits());
     const b = Store.write(Store.KEYS.results, SampleData.results());
     return a.ok && b.ok ? { ok: true } : { ok: false, message: Store.lastProblem };
   },
 
-
+  
   getResults() {
     const list = Store.readRaw(Store.KEYS.results);
     return Array.isArray(list) ? list : [];
@@ -1025,7 +1031,7 @@ const Store = {
     return Store.getResults().find((r) => r.resultId === resultId) || null;
   },
 
-
+  
   addResult(result) {
     const list = Store.getResults();
     list.unshift(result);
@@ -1037,13 +1043,13 @@ const Store = {
     return Store.write(Store.KEYS.results, list);
   },
 
-
+  
   getCircuits() {
     const list = Store.readRaw(Store.KEYS.circuits);
     return Array.isArray(list) ? list : [];
   },
 
-
+  
   saveCircuit(design) {
     const list = Store.getCircuits();
     const index = list.findIndex((c) => c.circuitId === design.circuitId);
@@ -1052,7 +1058,7 @@ const Store = {
     return Store.write(Store.KEYS.circuits, list);
   },
 
-
+  
   getPrefs() {
     const defaults = { role: 'student', units: 'SI', lastExperiment: '' };
     const saved = Store.readRaw(Store.KEYS.prefs);
@@ -1066,14 +1072,14 @@ const Store = {
 };
 
 
-
 const UI = {
-
+  
   byId(id) {
     return document.getElementById(id);
   },
 
-
+  
+  
   showMessage(containerId, type, text) {
     const box = UI.byId(containerId);
     if (!box) return;
@@ -1091,7 +1097,7 @@ const UI = {
     if (box) box.innerHTML = '';
   },
 
-
+  
   setFieldError(inputEl, errorId, message) {
     const errorEl = UI.byId(errorId);
     if (message) {
@@ -1105,14 +1111,14 @@ const UI = {
     }
   },
 
-
+  
   linkRangeAndNumber(rangeEl, numberEl, onChange) {
     rangeEl.addEventListener('input', () => {
       numberEl.value = rangeEl.value;
       onChange();
     });
     numberEl.addEventListener('input', () => {
-
+      
       if (numberEl.value !== '' && !Number.isNaN(Number(numberEl.value))) {
         rangeEl.value = numberEl.value;
       }
@@ -1120,7 +1126,7 @@ const UI = {
     });
   },
 
-
+  
   statusBadge(status) {
     if (status === 'Matched') return '<span class="badge badge-ok">Matched</span>';
     return '<span class="badge badge-warn">Needs repeat</span>';
@@ -1137,13 +1143,14 @@ const UI = {
     return date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   },
 
-
+  
   readoutTile(label, valueText) {
     return '<div class="readout-tile"><div class="readout-label">' + Utils.escapeHtml(label) +
       '</div><div class="readout-value">' + valueText + '</div></div>';
   },
 
- 
+  
+  
   saveResultWithMessage(result, feedbackId) {
     const outcome = Store.addResult(result);
     if (outcome.ok) {
@@ -1154,7 +1161,6 @@ const UI = {
     return outcome.ok;
   },
 };
-
 
 
 const Roles = {
@@ -1173,7 +1179,7 @@ const Roles = {
     Roles.apply();
   },
 
-
+  
   apply() {
     const teacher = Roles.isTeacher();
     document.querySelectorAll('[data-role="teacher"]').forEach((el) => {
@@ -1183,7 +1189,7 @@ const Roles = {
     if (select) select.value = Roles.current();
   },
 
-
+  
   require(actionName) {
     if (Roles.isTeacher()) return true;
     UI.showMessage('global-feedback', 'warning',
@@ -1192,10 +1198,8 @@ const Roles = {
   },
 };
 
-
-
 const Dashboard = {
-
+  
   experiments: [
     { screen: 'circuit', title: 'Circuit Lab',
       text: 'Put a battery, resistors and a switch in series or parallel and read the current and voltage.' },
@@ -1215,7 +1219,7 @@ const Dashboard = {
     Dashboard.renderRecent();
   },
 
-
+  
   titleIntroReady: false,
   initTitleIntro() {
     if (Dashboard.titleIntroReady) return;
@@ -1250,7 +1254,7 @@ const Dashboard = {
     UI.byId('experiment-cards').innerHTML = html;
   },
 
-
+  
   renderContinue() {
     const last = Store.getPrefs().lastExperiment;
     const exp = Dashboard.experiments.find((e) => e.screen === last);
@@ -1285,8 +1289,6 @@ const Dashboard = {
   },
 };
 
-
-
 const CircuitSolver = {
   GRID: 20,
   HALF: 2,                 
@@ -1296,7 +1298,7 @@ const CircuitSolver = {
   BULB_RATED_WATTS: 0.5,   
   TYPES: ['battery', 'resistor', 'bulb', 'switch', 'ammeter', 'voltmeter'],
 
-
+  
   defaultValue(type) {
     if (type === 'battery') return 9;
     if (type === 'resistor') return 100;
@@ -1304,7 +1306,7 @@ const CircuitSolver = {
     return 0;
   },
 
-
+  
   terminalOffset(rot, t) {
     let x = t === 0 ? -CircuitSolver.HALF : CircuitSolver.HALF;
     let y = 0;
@@ -1318,6 +1320,7 @@ const CircuitSolver = {
   },
 
   
+  
   partOhms(part) {
     const S = CircuitSolver;
     if (part.type === 'resistor' || part.type === 'bulb') return Number(part.value);
@@ -1327,6 +1330,7 @@ const CircuitSolver = {
     return null;
   },
 
+  
   
   buildNetlist(design) {
     const parent = {};
@@ -1356,7 +1360,7 @@ const CircuitSolver = {
     return { netOf, nets: count };
   },
 
-
+  
   _gauss(A, b) {
     const n = b.length;
     for (let c = 0; c < n; c++) {
@@ -1379,8 +1383,7 @@ const CircuitSolver = {
     }
     return x;
   },
-
-
+ 
   solve(design) {
     const S = CircuitSolver;
     const parts = design.parts || [];
@@ -1411,6 +1414,7 @@ const CircuitSolver = {
 
     const net = S.buildNetlist(design);
 
+    
     
     const zp = {};
     const zf = (k) => { if (zp[k] === undefined) zp[k] = k; while (zp[k] !== k) { zp[k] = zp[zp[k]]; k = zp[k]; } return k; };
@@ -1449,7 +1453,7 @@ const CircuitSolver = {
     batteries.forEach((bat, j) => {
       const row = (n - 1) + j;
       const minus = net.netOf(bat.id, 0), plus = net.netOf(bat.id, 1);
-
+      
       if (plus > 0) { A[idx(plus)][row] += 1; A[row][idx(plus)] += 1; }
       if (minus > 0) { A[idx(minus)][row] -= 1; A[row][idx(minus)] -= 1; }
       rhs[row] = Number(bat.value);
@@ -1480,7 +1484,7 @@ const CircuitSolver = {
         if (p.type === 'bulb') r.glow = Math.max(0, Math.min(1, r.p / S.BULB_RATED_WATTS));
         if ((p.type === 'resistor' || p.type === 'bulb') && Math.abs(r.i) > loadCurrent) loadCurrent = Math.abs(r.i);
       }
-
+      
       if (Math.abs(r.i) < 1e-9) r.i = 0;
       if (Math.abs(r.v) < 1e-5) r.v = 0;
       if (r.p < 1e-12) r.p = 0;
@@ -1492,7 +1496,7 @@ const CircuitSolver = {
       return out;
     }
 
-
+    
     const b0 = batteries[0];
     out.voltage = Number(b0.value);
     out.current = Math.abs(out.parts[b0.id].i);
@@ -1518,7 +1522,7 @@ const CircuitSolver = {
     return out;
   },
 
-
+  
   topology(design) {
     const S = CircuitSolver;
     const net = S.buildNetlist(design);
@@ -1536,7 +1540,7 @@ const CircuitSolver = {
     return 'mixed';
   },
 
-
+  
   fmt(value, unit) {
     const v = Math.abs(value);
     let n;
@@ -1548,7 +1552,7 @@ const CircuitSolver = {
     return n + ' ' + unit;
   },
 
-
+  
   preset(name) {
     const mk = (id, type, gx, gy, rot, value, closed) => ({ id, type, gx, gy, rot, value: value === undefined ? CircuitSolver.defaultValue(type) : value, closed: closed !== false });
     const w = (id, ap, at, bp, bt) => ({ id, a: { p: ap, t: at }, b: { p: bp, t: bt }, route: 'auto' });
@@ -1565,7 +1569,7 @@ const CircuitSolver = {
         ],
       };
     }
-    // series
+    
     return {
       parts: [
         mk('p1', 'battery', 6, 10, 3, 9), mk('p2', 'switch', 12, 8, 0, 0, true),
@@ -1583,7 +1587,6 @@ const CircuitSolver = {
 if (typeof module !== 'undefined' && module.exports) module.exports = CircuitSolver;
 
 
-
 const CircuitDraw = {
   CELL: 20,
   COLS: 40,
@@ -1591,7 +1594,7 @@ const CircuitDraw = {
   NAMES: { battery: 'Battery', resistor: 'Resistor', bulb: 'Bulb', switch: 'Switch', ammeter: 'Ammeter', voltmeter: 'Voltmeter' },
   PREFIX: { battery: 'B', resistor: 'R', bulb: 'L', switch: 'S', ammeter: 'A', voltmeter: 'V' },
 
-
+  
   names(design) {
     const count = {};
     const out = {};
@@ -1604,13 +1607,13 @@ const CircuitDraw = {
 
   px(cell) { return cell * CircuitDraw.CELL; },
 
-
+  
   wirePoints(design, wire) {
     const S = CircuitSolver;
     const pa = (design.parts || []).find((p) => p.id === wire.a.p);
     const pb = (design.parts || []).find((p) => p.id === wire.b.p);
     if (!pa || !pb) return null;
-
+    
     const C = CircuitDraw;
     const inTable = (q) => ({ x: Math.max(0, Math.min(C.COLS, q.x)), y: Math.max(0, Math.min(C.ROWS, q.y)) });
     const a = inTable(S.terminalCell(pa, wire.a.t)), b = inTable(S.terminalCell(pb, wire.b.t));
@@ -1626,7 +1629,7 @@ const CircuitDraw = {
     return typeof Utils !== 'undefined' ? Utils.formatWithUnit(value, unit) : CircuitSolver.fmt(value, unit);
   },
 
-
+  
   symbol(p, res, isOn) {
     const lead = (x1, x2) => '<line class="lead" x1="' + x1 + '" y1="0" x2="' + x2 + '" y2="0"/>';
     if (p.type === 'battery') {
@@ -1651,14 +1654,14 @@ const CircuitDraw = {
         '<line class="body" x1="-22" y1="0" x2="' + (p.closed ? 26 : 22) + '" y2="' + (p.closed ? 0 : -18) + '"/>' +
         '<circle class="body-dot" cx="-22" cy="0" r="3.5"/><circle class="body-dot" cx="26" cy="0" r="3.5"/>';
     }
-
+    
     const letter = p.type === 'ammeter' ? 'A' : 'V';
     return lead(-40, -16) + lead(16, 40) +
       '<circle class="body meter-ring" r="16"/>' +
       '<text class="meter-letter" text-anchor="middle" dominant-baseline="central" transform="rotate(' + (-(p.rot || 0) * 90) + ')">' + letter + '</text>';
   },
 
-
+  
   render(design, view) {
     const C = CircuitDraw, S = CircuitSolver;
     const W = C.COLS * C.CELL, H = C.ROWS * C.CELL;
@@ -1674,7 +1677,7 @@ const CircuitDraw = {
       '<filter id="lab-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7"/></filter></defs>' +
       '<rect class="table-bg" x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#lab-grid)" data-table="1"/>';
 
-
+    
     (design.wires || []).forEach((w) => {
       const pts = C.wirePoints(design, w);
       if (!pts) return;
@@ -1688,7 +1691,7 @@ const CircuitDraw = {
         (live ? '<path class="wire-flow" d="' + d + '"/>' : '') + '</g>';
     });
 
-
+    
     (design.parts || []).forEach((p) => {
       const r = result ? result.parts[p.id] : null;
       const sel = view.selPart === p.id;
@@ -1700,7 +1703,7 @@ const CircuitDraw = {
         C.symbol(p, r, true) + '</g></g>';
     });
 
-
+    
     (design.parts || []).forEach((p) => {
       const r = result ? result.parts[p.id] : null;
       const vertical = (p.rot || 0) % 2 === 1;
@@ -1727,7 +1730,7 @@ const CircuitDraw = {
       }
     });
 
-
+    
     (design.parts || []).forEach((p) => {
       [0, 1].forEach((t) => {
         const c = S.terminalCell(p, t);
@@ -1738,7 +1741,7 @@ const CircuitDraw = {
       });
     });
 
-
+    
     if (view.temp) {
       const pa = design.parts.find((p) => p.id === view.temp.from.p);
       if (pa) {
@@ -1749,13 +1752,14 @@ const CircuitDraw = {
     return svg + '</svg>';
   },
 
-
+  
   trayIcon(type) {
     const body = CircuitDraw.symbol({ type, closed: true, rot: 0 }, null, false);
     return '<svg class="tray-icon" viewBox="-44 -26 88 52" width="52" height="30" aria-hidden="true" focusable="false">' + body + '</svg>';
   },
 };
 
+if (typeof module !== 'undefined' && module.exports) module.exports = CircuitDraw;
 
 
 const CircuitLab = {
@@ -1772,7 +1776,7 @@ const CircuitLab = {
   suppressClick: false,
   ready: false,
 
-
+  
   TRAY: [
     { type: 'battery', value: 9, label: 'Battery 9 V' },
     { type: 'battery', value: 1.5, label: 'Cell 1.5 V' },
@@ -1793,7 +1797,7 @@ const CircuitLab = {
       '<svg class="tray-icon" viewBox="-44 -26 88 52" width="52" height="30" aria-hidden="true" focusable="false"><polyline class="body" fill="none" points="-36,12 -10,12 -10,-12 36,-12"/><circle class="term-dot" cx="-36" cy="12" r="5"/><circle class="term-dot" cx="36" cy="-12" r="5"/></svg><span>Wire</span></button>';
 
     tray.addEventListener('pointerdown', CircuitLab.trayDown);
-
+    
     document.addEventListener('pointermove', CircuitLab.trayMove);
     document.addEventListener('pointerup', CircuitLab.trayUp);
     document.addEventListener('pointercancel', CircuitLab.trayCancel);
@@ -1836,19 +1840,19 @@ const CircuitLab = {
     if (!CircuitLab.panned) { CircuitLab.panned = true; CircuitLab.panToParts(); }
   },
 
-
+  
   redraw() {
     if (!CircuitLab.ready) return;
     CircuitLab.renderTable();
   },
 
-
+  
   partById(id) { return CircuitLab.design.parts.find((p) => p.id === id); },
   newId(prefix) { CircuitLab.counter += 1; return prefix + CircuitLab.counter; },
   say(type, text) { UI.showMessage('circuit-feedback', type, text); },
   fmt(v, unit) { return Utils.formatWithUnit(v, unit); },
 
-
+  
   tablePoint(e) {
     const svg = UI.byId('circuit-canvas').querySelector('svg');
     const r = svg.getBoundingClientRect();
@@ -1876,7 +1880,7 @@ const CircuitLab = {
     return best;
   },
 
-
+  
   addPart(type, value, gx, gy) {
     CircuitLab.touched = true;
     const cell = CircuitLab.clampCell(gx, gy);
@@ -1897,7 +1901,7 @@ const CircuitLab = {
     return { gx: 20, gy: 12 };
   },
 
-
+  
   trayDown(e) {
     const btn = e.target.closest('[data-tray]');
     if (!btn || e.button > 0) return;
@@ -1908,7 +1912,7 @@ const CircuitLab = {
     const t = CircuitLab.tray;
     if (!t || e.pointerId !== t.id) return;
     if (!t.moved && !t.scrolling && Math.hypot(e.clientX - t.x0, e.clientY - t.y0) > 8) {
-
+      
       if (t.touch && Math.abs(e.clientX - t.x0) > Math.abs(e.clientY - t.y0)) {
         t.scrolling = true;
         t.lastX = t.x0;
@@ -1938,7 +1942,6 @@ const CircuitLab = {
     CircuitLab.tray = null;
     if (t.ghost) t.ghost.remove();
     if (t.scrolling) { CircuitLab.suppressClick = true; setTimeout(() => { CircuitLab.suppressClick = false; }, 50); return; }
-
     if (!t.moved) return; 
     CircuitLab.suppressClick = true;
     setTimeout(() => { CircuitLab.suppressClick = false; }, 50);
@@ -1976,6 +1979,7 @@ const CircuitLab = {
     CircuitLab.say('success', item.label + ' added. Drag it into place, press R to rotate, Delete to remove.');
   },
 
+  
   tableDown(e) {
     if (e.button > 0 || !e.isPrimary) return;
     const box = UI.byId('circuit-canvas');
@@ -2065,6 +2069,7 @@ const CircuitLab = {
     CircuitLab.update(true);
   },
 
+  
   select(partId, wireId) {
     CircuitLab.selPart = partId;
     CircuitLab.selWire = wireId;
@@ -2135,6 +2140,7 @@ const CircuitLab = {
     CircuitLab.update(false);
   },
 
+  
   panToParts() {
     const box = UI.byId('circuit-canvas');
     const parts = CircuitLab.design.parts;
@@ -2144,6 +2150,7 @@ const CircuitLab = {
     box.scrollLeft = Math.max(0, minX * CircuitDraw.CELL * scale);
   },
 
+  
   update(rebuildControls) {
     CircuitLab.result = CircuitSolver.solve(CircuitLab.design);
     if (rebuildControls) CircuitLab.renderControls();
@@ -2221,6 +2228,7 @@ const CircuitLab = {
         : '<p class="small text-muted-vl mt-2 mb-0">No parts yet.</p>') + totals;
   },
 
+  
   renderControls() {
     const box = UI.byId('circuit-controls');
     const names = CircuitDraw.names(CircuitLab.design);
@@ -2274,10 +2282,12 @@ const CircuitLab = {
     }
   },
 
+  
   loads() {
     return CircuitLab.design.parts.filter((p) => p.type === 'resistor' || p.type === 'bulb');
   },
 
+  
   theoryCurrent(r) {
     const top = CircuitSolver.topology(CircuitLab.design);
     const ohms = CircuitLab.loads().map((p) => Number(p.value));
@@ -2303,9 +2313,11 @@ const CircuitLab = {
     const diff = Physics.percentDifference(r.current, theory);
     const sw = d.parts.filter((p) => p.type === 'switch');
     const battery = d.parts.find((p) => p.type === 'battery');
+    const circuitId = CircuitLab.designId || Utils.makeId('circ');
     const result = {
       resultId: Utils.makeId('res'),
       experimentType: 'circuit',
+      circuitId,
       name: nameCheck.value,
       inputs: {
         topology: top,
@@ -2323,12 +2335,21 @@ const CircuitLab = {
       measuredValue: Number(r.current.toFixed(4)),
       valueLabel: 'Current', unit: 'A',
       status: Physics.statusFromDifference(diff, 2),
+      
+      circuitSnapshot: Object.assign(JSON.parse(JSON.stringify({ parts: d.parts, wires: d.wires })), {
+        readings: {
+          voltage: Number(battery.value),
+          totalResistance: Number(r.totalResistance.toFixed(4)),
+          current: Number(r.current.toFixed(4)),
+          power: Number(r.power.toFixed(4)),
+        },
+      }),
       createdAt: new Date().toISOString(),
     };
 
     const names = CircuitDraw.names(d);
     const design = {
-      circuitId: CircuitLab.designId || Utils.makeId('circ'),
+      circuitId,
       name: nameCheck.value,
       components: {
         topology: top, hasBattery: true, voltage: Number(battery.value),
@@ -2360,6 +2381,7 @@ const CircuitLab = {
       '<option value="' + Utils.escapeHtml(d.circuitId) + '">' + Utils.escapeHtml(d.name) + '</option>').join('');
   },
 
+  
   layoutFromLegacy(c) {
     const mk = (id, type, gx, gy, rot, value, closed) => ({ id, type, gx, gy, rot, value, closed: closed !== false });
     const parts = [], wires = [];
@@ -2408,6 +2430,7 @@ const CircuitLab = {
     const c = design.components;
     const layout = c.layout && Array.isArray(c.layout.parts) ? c.layout : CircuitLab.layoutFromLegacy(c);
     CircuitLab.design = JSON.parse(JSON.stringify({ parts: layout.parts, wires: layout.wires || [] }));
+    
     CircuitLab.design.parts.forEach((p) => { Object.assign(p, CircuitLab.clampCell(p.gx, p.gy)); });
     CircuitLab.counter = 100;
     CircuitLab.touched = true;
@@ -2419,10 +2442,95 @@ const CircuitLab = {
   },
 };
 
+const CircuitReview = {
+  TOLERANCE_PERCENT: 2,   
+
+  
+  review(layout) {
+    const design = { parts: (layout && layout.parts) || [], wires: (layout && layout.wires) || [] };
+    const r = CircuitSolver.solve(design);
+    if (r.status !== 'ok') {
+      return { status: 'Needs repeat', reasons: [r.message || 'The circuit is not complete yet.'] };
+    }
+
+    const reasons = r.warnings.slice();
+    const names = CircuitDraw.names(design);
+    design.parts.forEach((p) => {
+      const isLoad = p.type === 'resistor' || p.type === 'bulb';
+      if (isLoad && Math.abs(r.parts[p.id].i) <= 1e-9) {
+        reasons.push(names[p.id] + ' is not in the circuit, so no current flows through it.');
+      }
+    });
+
+    const theory = CircuitReview.theoryCurrent(design, r);
+    const diff = Physics.percentDifference(r.current, theory);
+    if (Physics.statusFromDifference(diff, CircuitReview.TOLERANCE_PERCENT) !== 'Matched') {
+      reasons.push('The measured current is ' + diff.toFixed(1) + ' % away from the formula value. The limit is ' +
+        CircuitReview.TOLERANCE_PERCENT + ' %.');
+    }
+    return { status: reasons.length ? 'Needs repeat' : 'Matched', reasons };
+  },
+
+  
+  copyLayout(src) {
+    return {
+      parts: JSON.parse(JSON.stringify((src && src.parts) || [])),
+      wires: JSON.parse(JSON.stringify((src && src.wires) || [])),
+    };
+  },
+
+  
+  
+  
+  pictureFor(result, circuits, fromLegacy) {
+    if (result && result.circuitSnapshot && Array.isArray(result.circuitSnapshot.parts)) {
+      return { layout: CircuitReview.copyLayout(result.circuitSnapshot), source: 'snapshot' };
+    }
+    const linked = result && result.circuitId
+      ? (circuits || []).find((c) => c && c.circuitId === result.circuitId) : null;
+    if (!linked || !linked.components) return null;
+    const c = linked.components;
+    if (c.layout && Array.isArray(c.layout.parts)) {
+      return { layout: CircuitReview.copyLayout(c.layout), source: 'circuit' };
+    }
+    if (typeof fromLegacy === 'function') return { layout: CircuitReview.copyLayout(fromLegacy(c)), source: 'circuit' };
+    return null;
+  },
+
+  
+  checkLayout(layout) {
+    return { layout, review: CircuitReview.review(layout), solved: CircuitSolver.solve(layout) };
+  },
+
+  
+  resultReasons(result, review) {
+    if (review && review.status !== 'Matched') return review.reasons;
+    if (result && result.status !== 'Matched') {
+      const diff = Physics.percentDifference(result.measuredValue, result.theoreticalValue);
+      return ['The measured current is ' + diff.toFixed(1) + ' % away from the formula value. The limit is ' +
+        CircuitReview.TOLERANCE_PERCENT + ' %.'];
+    }
+    return [];
+  },
+
+  
+  theoryCurrent(design, r) {
+    const top = CircuitSolver.topology(design);
+    const ohms = design.parts
+      .filter((p) => p.type === 'resistor' || p.type === 'bulb')
+      .map((p) => Number(p.value));
+    if (top === 'series') return Physics.current(r.voltage, Physics.seriesResistance(ohms));
+    if (top === 'parallel') return Physics.current(r.voltage, Physics.parallelResistance(ohms));
+    return r.current;
+  },
+};
+
+if (typeof module !== 'undefined' && module.exports) module.exports = CircuitReview;
+
 
 const Projectile = {
   lastRun: null,      
-  animationId: null, 
+  animationId: null,  
   lastDraw: null,     
 
   init() {
@@ -2441,6 +2549,8 @@ const Projectile = {
     if (!Projectile.lastRun) Projectile.showIdle();
   },
 
+  
+  
   redraw() {
     const d = Projectile.lastDraw;
     const box = UI.byId('proj-canvas');
@@ -2448,6 +2558,7 @@ const Projectile = {
     box.innerHTML = Projectile.drawScene(d.i, d.th, d.progress);
   },
 
+  
   readInputs() {
     const speedEl = UI.byId('proj-speed');
     const angleEl = UI.byId('proj-angle');
@@ -2458,7 +2569,7 @@ const Projectile = {
     return { ok: s.ok && a.ok, speed: s.value, angle: a.value, g: Number(UI.byId('proj-gravity').value) };
   },
 
-
+  
   onInputChange() {
     Projectile.stopAnimation();
     Projectile.lastRun = null;
@@ -2466,6 +2577,8 @@ const Projectile = {
     if (inputs.ok) Projectile.showIdle(inputs);
     else UI.byId('proj-readouts').innerHTML = '<p class="mb-0">Fix the highlighted input to see results.</p>';
   },
+
+  
   showIdle(inputs) {
     const i = inputs || Projectile.readInputs();
     if (!i.ok) return;
@@ -2500,6 +2613,7 @@ const Projectile = {
     const sim = Physics.simulateProjectile(inputs.speed, inputs.angle, inputs.g);
     Projectile.lastRun = { inputs, theory: th, sim };
 
+    
     const seconds = Math.min(6, Math.max(1.5, sim.timeOfFlight));
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const canvas = UI.byId('proj-canvas');
@@ -2533,7 +2647,7 @@ const Projectile = {
     UI.byId('proj-run').disabled = false;
   },
 
-
+  
   showResults() {
     const run = Projectile.lastRun;
     if (!run) return;
@@ -2563,7 +2677,10 @@ const Projectile = {
       '<tbody>' + body + '</tbody></table></div>' +
       '<p class="small mt-2 mb-0">Theory: R = v²·sin(2θ)/g, T = 2v·sinθ/g, H = v²·sin²θ/(2g). No air resistance.</p>';
   },
+
+  
   drawScene(i, th, progress) {
+    
     Projectile.lastDraw = { i, th, progress };
     const bg = Utils.themeColor('--canvas', '#060b12');
     const axis = Utils.themeColor('--sim-axis', '#9fb4c9');
@@ -2571,12 +2688,12 @@ const Projectile = {
     const accent = Utils.themeColor('--accent', '#00f0ff');
     const W = 600, H = 300, left = 50, right = 20, top = 20, bottom = 40;
     const pw = W - left - right, ph = H - top - bottom;
-
+    
     const scale = Math.min(pw / Math.max(th.range, 0.01), ph / Math.max(th.height, 0.01));
     const px = (x) => left + x * scale;
     const py = (y) => H - bottom - y * scale;
 
-
+    
     const pts = [];
     const n = 60;
     for (let k = 0; k <= n; k++) {
@@ -2654,6 +2771,8 @@ const Projectile = {
 
 
 
+
+
 const Pendulum = {
   lastRun: null,
   animationId: null,
@@ -2673,7 +2792,7 @@ const Pendulum = {
     if (!Pendulum.lastRun) Pendulum.showIdle();
   },
 
-
+  
   redraw() {
     const d = Pendulum.lastDraw;
     const box = UI.byId('pend-canvas');
@@ -2736,7 +2855,7 @@ const Pendulum = {
     UI.byId('pend-run').disabled = true;
     const start = performance.now();
     const step = (now) => {
-
+      
       const index = Math.max(0, Math.min(sim.samples.length - 1, Math.floor((now - start) / 1000 / dt)));
       canvas.innerHTML = Pendulum.drawScene(inputs, sim.samples[index]);
       if (index < sim.samples.length - 1) {
@@ -2774,9 +2893,9 @@ const Pendulum = {
       '<p class="small mt-2 mb-0">Theory: T = 2π√(L/g). No air resistance, string has no mass.</p>';
   },
 
-
+  
   drawScene(i, theta) {
-
+    
     Pendulum.lastDraw = { i, theta };
     const bg = Utils.themeColor('--canvas', '#060b12');
     const axis = Utils.themeColor('--sim-axis', '#9fb4c9');
@@ -2786,7 +2905,7 @@ const Pendulum = {
     const stringPx = 230 * (0.35 + 0.65 * (i.length / 5)); 
     const bx = pivotX + stringPx * Math.sin(theta);
     const by = pivotY + stringPx * Math.cos(theta);
-
+    
     const sa = Physics.toRadians(i.angle);
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="sim-svg" xmlns="http://www.w3.org/2000/svg" focusable="false">' +
       '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="' + bg + '"/>' +
@@ -2839,6 +2958,8 @@ const Pendulum = {
 
 
 
+
+
 const Results = {
   filters: { search: '', type: 'all', status: 'all', sort: 'newest' },
   visibleRows: [],  
@@ -2855,7 +2976,7 @@ const Results = {
     form.addEventListener('submit', (e) => e.preventDefault());
     UI.byId('btn-export-csv').addEventListener('click', Results.exportCsv);
 
-
+    
     UI.byId('results-body').addEventListener('click', (event) => {
       const row = event.target.closest('tr[data-id]');
       if (!row || event.target.closest('a')) return;
@@ -2876,7 +2997,7 @@ const Results = {
     Results.render();
   },
 
-
+  
   applyFilters(list) {
     const f = Results.filters;
     const q = f.search.trim().toLowerCase();
@@ -2901,7 +3022,7 @@ const Results = {
       '</div>';
   },
 
-
+  
   bindEmptyState(container) {
     const button = container.querySelector('[data-action="load-samples"]');
     if (!button) return;
@@ -2957,7 +3078,9 @@ const Results = {
       '</tbody></table></div>';
   },
 
+  
 
+  
   labels: {
     topology: 'Circuit type', voltage: 'Battery voltage (V)', resistors: 'Resistors (Ω)', switchClosed: 'Switch closed',
     note: 'Note', speed: 'Launch speed (m/s)', angle: 'Launch angle (°)', gravity: 'Gravity (m/s²)',
@@ -2978,6 +3101,24 @@ const Results = {
     }).join('') + '</dl>';
   },
 
+  
+  
+  circuitHtml(r) {
+    const head = '<div class="card mb-3"><div class="card-body"><h3 class="h5">Circuit as built</h3>';
+    const found = CircuitReview.pictureFor(r, Store.getCircuits(), CircuitLab.layoutFromLegacy);
+    if (!found) return head + '<p class="mb-0">Circuit not saved with this result.</p></div></div>';
+
+    const check = CircuitReview.checkLayout(found.layout);
+    const snap = r.circuitSnapshot && r.circuitSnapshot.readings;
+    const readings = snap
+      ? '<p class="small text-muted-vl mt-2 mb-0">Saved readings: battery ' + Utils.formatWithUnit(snap.voltage, 'V') +
+        ', total resistance ' + Utils.formatWithUnit(snap.totalResistance, 'Ω') +
+        ', current ' + Utils.formatWithUnit(snap.current, 'A') + ', power ' + Utils.formatWithUnit(snap.power, 'W') + '.</p>'
+      : '';
+    return head + Teacher.previewHtml(check) +
+      '<div class="mt-2">' + Teacher.resultReasonsHtml(r, check.review) + '</div>' + readings + '</div></div>';
+  },
+
   showDetail(resultId) {
     const body = UI.byId('detail-body');
     const r = Store.getResult(resultId);
@@ -2996,6 +3137,7 @@ const Results = {
       UI.readoutTile(r.valueLabel + ' (measured)', Utils.formatWithUnit(r.measuredValue, r.unit)) +
       UI.readoutTile(r.valueLabel + ' (theory)', Utils.formatWithUnit(r.theoreticalValue, r.unit)) +
       UI.readoutTile('Difference', Utils.formatNumber(diff, 3) + ' %') + '</div></div></div>' +
+      (r.experimentType === 'circuit' ? Results.circuitHtml(r) : '') +
       '<div class="row g-3"><div class="col-md-6"><div class="card h-100"><div class="card-body"><h3 class="h5">Inputs</h3>' +
       Results.definitionList(r.inputs) + '</div></div></div>' +
       '<div class="col-md-6"><div class="card h-100"><div class="card-body"><h3 class="h5">Outputs</h3>' +
@@ -3006,7 +3148,7 @@ const Results = {
     UI.byId('btn-delete-result').addEventListener('click', () => Results.askDelete(r));
   },
 
-
+  
   askDelete(r) {
     UI.byId('detail-actions').innerHTML =
       '<div class="alert alert-warning mb-0" role="alert"><strong>Warning:</strong> Delete "' + Utils.escapeHtml(r.name) +
@@ -3026,7 +3168,7 @@ const Results = {
     });
   },
 
-
+  
 
   exportCsv() {
     if (!Roles.require('CSV export')) return;
@@ -3040,7 +3182,7 @@ const Results = {
       r.name, UI.typeLabel(r.experimentType), r.measuredValue, r.theoreticalValue, r.unit,
       Number(Physics.percentDifference(r.measuredValue, r.theoreticalValue).toFixed(3)), r.status, r.createdAt,
     ]);
-    const csv = '﻿' + Utils.toCsv(headers, data); // BOM: Excel mein sahi khulta hai
+    const csv = '﻿' + Utils.toCsv(headers, data); 
     try {
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -3061,30 +3203,108 @@ const Results = {
 
 
 const Teacher = {
+  
+  
+  checkCircuit(record) {
+    if (!record || !record.components) return null;
+    const c = record.components;
+    const src = c.layout && Array.isArray(c.layout.parts) ? c.layout : CircuitLab.layoutFromLegacy(c);
+    const layout = {
+      parts: JSON.parse(JSON.stringify(src.parts)),
+      wires: JSON.parse(JSON.stringify(src.wires || [])),
+    };
+    return {
+      record,
+      layout,
+      review: CircuitReview.review(layout),
+      solved: CircuitSolver.solve(layout),
+    };
+  },
+
+  
+  previewHtml(check) {
+    const live = check.solved.status === 'ok';
+    const svg = CircuitDraw.render(check.layout, {
+      running: live, result: check.solved, selPart: null, selWire: null, temp: null, hover: null, wireMode: false,
+    });
+    return '<div class="review-preview">' + svg + '</div>';
+  },
+
+  reasonsHtml(review) {
+    if (review.status === 'Matched') return '<p class="small mb-0">Everything checks out.</p>';
+    return '<ul class="review-reasons small mb-0">' +
+      review.reasons.map((t) => '<li>' + Utils.escapeHtml(t) + '</li>').join('') + '</ul>';
+  },
+
+  
+  resultReasonsHtml(result, review) {
+    const reasons = CircuitReview.resultReasons(result, review);
+    if (reasons.length === 0) return '<p class="small mb-0">Everything checks out.</p>';
+    return '<ul class="review-reasons small mb-0">' +
+      reasons.map((t) => '<li>' + Utils.escapeHtml(t) + '</li>').join('') + '</ul>';
+  },
+
   onShow() {
     const results = Store.getResults();
+    const circuits = Store.getCircuits();
     const box = UI.byId('teacher-body');
     const byType = { circuit: 0, projectile: 0, pendulum: 0 };
     results.forEach((r) => { if (r.experimentType in byType) byType[r.experimentType] += 1; });
     const repeat = results.filter((r) => r.status !== 'Matched');
     const matched = results.length - repeat.length;
 
+    
+    const checks = circuits.map((d) => Teacher.checkCircuit(d)).filter((c) => c !== null);
+    const circuitsToRepeat = checks.filter((c) => c.review.status !== 'Matched').length;
+
+    
     const repeatHtml = repeat.length === 0
       ? '<p class="mb-0">Nothing needs repeating right now.</p>'
-      : '<ul class="list-group">' + repeat.map((r) =>
-        '<li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">' +
-        '<span><a href="#result/' + encodeURIComponent(r.resultId) + '">' + Utils.escapeHtml(r.name) + '</a> ' +
-        '<span class="text-muted-vl small">(' + UI.typeLabel(r.experimentType) + ')</span></span>' +
-        UI.statusBadge(r.status) + '</li>').join('') + '</ul>';
+      : '<ul class="list-group">' + repeat.map((r) => {
+        const found = r.experimentType === 'circuit'
+          ? CircuitReview.pictureFor(r, circuits, CircuitLab.layoutFromLegacy) : null;
+        const check = found ? CircuitReview.checkLayout(found.layout) : null;
+        let extra = '';
+        if (r.experimentType === 'circuit') {
+          const picture = check ? Teacher.previewHtml(check)
+            : '<p class="small text-muted-vl mt-1 mb-0">Circuit not saved with this result.</p>';
+          extra = '<div class="small mt-1">' + Teacher.resultReasonsHtml(r, check ? check.review : null) + '</div>' + picture;
+        }
+        return '<li class="list-group-item">' +
+          '<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">' +
+          '<span><a href="#result/' + encodeURIComponent(r.resultId) + '">' + Utils.escapeHtml(r.name) + '</a> ' +
+          '<span class="text-muted-vl small">(' + UI.typeLabel(r.experimentType) + ')</span></span>' +
+          UI.statusBadge(r.status) + '</div>' + extra + '</li>';
+      }).join('') + '</ul>';
+
+    
+    const ordered = checks.slice().sort((a, b) => {
+      const ra = a.review.status === 'Matched' ? 1 : 0, rb = b.review.status === 'Matched' ? 1 : 0;
+      return ra - rb || String(a.record.name).localeCompare(String(b.record.name));
+    });
+    const circuitsHtml = ordered.length === 0
+      ? '<p class="mb-0">No saved circuits yet. Build one in Circuit Lab and press Save result.</p>'
+      : ordered.map((c) =>
+        '<div class="card review-item mb-2"><div class="card-body">' +
+        '<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">' +
+        '<strong>' + Utils.escapeHtml(c.record.name) + '</strong>' + UI.statusBadge(c.review.status) + '</div>' +
+        (c.record.connections ? '<p class="small text-muted-vl mb-1">' + Utils.escapeHtml(c.record.connections) + '</p>' : '') +
+        Teacher.reasonsHtml(c.review) +
+        Teacher.previewHtml(c) +
+        '</div></div>').join('');
 
     box.innerHTML =
       '<div class="readout-grid mb-3">' +
       UI.readoutTile('Total results', String(results.length)) +
       UI.readoutTile('Matched', String(matched)) +
       UI.readoutTile('Needs repeat', String(repeat.length)) +
+      UI.readoutTile('Circuits to repeat', String(circuitsToRepeat)) +
       UI.readoutTile('Circuit / Projectile / Pendulum', byType.circuit + ' / ' + byType.projectile + ' / ' + byType.pendulum) +
       '</div>' +
       '<div class="card mb-3"><div class="card-body"><h2 class="h5">Needs repeat</h2>' + repeatHtml + '</div></div>' +
+      '<div class="card mb-3"><div class="card-body"><h2 class="h5">Student circuits</h2>' +
+      '<p class="small text-muted-vl">What the student built. Circuits that need repeat are listed first, with the reasons.</p>' +
+      circuitsHtml + '</div></div>' +
       '<div class="card"><div class="card-body"><h2 class="h5">Sample data</h2>' +
       '<p>Reload the sample circuits and results. This replaces everything saved in this browser.</p>' +
       '<div id="teacher-feedback" aria-live="polite" class="mb-2"></div>' +
@@ -3122,16 +3342,16 @@ const App = {
   currentScreen: '',
 
   start() {
-   
+    
     let reloaded = false;
-    try { reloaded = Store.ensureSampleData(); } catch (e) { }
+    try { reloaded = Store.ensureSampleData(); } catch (e) {  }
 
     Roles.apply();
 
-
+    
     ThemeManager.init();
     document.addEventListener('themechange', () => {
-      try { CircuitLab.redraw(); } catch (e) { }
+      try { CircuitLab.redraw(); } catch (e) {  }
       try { Projectile.redraw(); } catch (e) {  }
       try { Pendulum.redraw(); } catch (e) {  }
     });
@@ -3154,7 +3374,7 @@ const App = {
     }, 350);
   },
 
-
+  
   route() {
     const hash = (location.hash || '#dashboard').replace('#', '');
     let name = hash.split('/')[0];
@@ -3162,7 +3382,7 @@ const App = {
     if (name === 'result') { name = 'detail'; detailId = decodeURIComponent(hash.split('/')[1] || ''); }
     if (!App.screens.includes(name)) name = 'dashboard';
 
-
+    
     if (name === 'teacher' && !Roles.isTeacher()) {
       UI.showMessage('global-feedback', 'warning', 'Teacher Review is only available in Teacher view. Switch "View as" to Teacher to open it.');
       location.hash = '#dashboard';
@@ -3184,7 +3404,7 @@ const App = {
     if (name === 'detail') Results.showDetail(detailId);
     if (name === 'teacher') Teacher.onShow();
 
-
+    
     const navName = name === 'detail' ? 'results' : name;
     document.querySelectorAll('[data-screen]').forEach((link) => {
       if (link.dataset.screen === navName) link.setAttribute('aria-current', 'page');
@@ -3192,18 +3412,18 @@ const App = {
     });
     document.title = App.titles[name] + ' - VirtualLab Simulator';
 
-
+    
     if (['circuit', 'projectile', 'pendulum'].includes(name)) {
       const prefs = Store.getPrefs();
       prefs.lastExperiment = name;
       Store.savePrefs(prefs);
     }
 
-
+    
     const nav = UI.byId('main-nav');
     if (nav && nav.classList.contains('show')) nav.classList.remove('show');
 
-
+    
     if (changed) {
       const heading = document.querySelector('#screen-' + name + ' h1');
       if (heading) heading.focus({ preventScroll: true });
