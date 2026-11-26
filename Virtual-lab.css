@@ -1,12 +1,13 @@
+
 :root,
 [data-bs-theme="dark"] {
-
+  
   --text: #f6f2ea;
   --muted: #dbe4ee;
   --ok: #8fd694;
   --warn: var(--accent);
 
-
+  
   --swatch-green: #39ff14;
   --swatch-cyan: #00f0ff;
   --swatch-pink: #ff2bd6;
@@ -15,7 +16,7 @@
   --font-head: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 
-
+  
   --gloss-top: rgba(255, 255, 255, 0.22);
   --gloss-sheen: linear-gradient(118deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 26%, rgba(255, 255, 255, 0) 46%);
 
@@ -168,7 +169,7 @@ html[data-theme="pink"] {
 
 body {
   color: var(--text);
-
+  
   background: var(--bg) linear-gradient(180deg, rgb(var(--bg-top-rgb)) 0%, rgb(var(--bg-mid-rgb)) 45%, rgb(var(--bg-bot-rgb)) 100%) fixed;
   min-height: 100vh;
   font-family: var(--font-body);
@@ -230,7 +231,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
   --bs-btn-disabled-color: var(--on-accent); --bs-btn-disabled-bg: var(--accent); --bs-btn-disabled-border-color: var(--accent);
   font-weight: 700;
   box-shadow: 3px 3px 0 var(--accent-deep), inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -2px 0 var(--shade-1);
-
+  
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.10) 49%, rgba(255, 255, 255, 0) 51%, var(--shade-2) 100%);
 }
 
@@ -512,6 +513,7 @@ h1:focus, h1[tabindex]:focus-visible { outline: none; }
   border: 2px dashed var(--line-strong); background: transparent; border-radius: var(--radius); padding: 2rem 1rem;
 }
 
+
 .form-label, legend.form-label { color: var(--text); font-weight: 600; font-size: 0.98rem; }
 .form-control, .form-select {
   background-color: var(--input-bg); color: var(--text);
@@ -770,3 +772,8 @@ details[open] summary { color: var(--accent); }
 
 .hero-circuit-canvas { display: block; width: 100%; height: auto; }
 .hero-vl .hero-circuit-float { animation: none; }
+
+
+.review-preview { margin-top: 8px; overflow-x: auto; }
+.review-preview .lab-svg { min-width: 0; width: 100%; max-width: 800px; height: auto; }
+.review-reasons { margin: 4px 0 0; padding-left: 1.1rem; color: var(--warn); }
